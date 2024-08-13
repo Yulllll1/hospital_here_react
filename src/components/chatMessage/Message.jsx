@@ -6,13 +6,15 @@ import { Box, Button, Modal } from '@mui/material';
 import { useRecoilState } from 'recoil';
 import { userauthState } from '../../utils/atom';
 import EditModal from './modal/EditModal';
+import { useNavigate } from 'react-router';
 
 const style = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  maxWidth: '50dvh',
+  width: '40%',
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -29,6 +31,8 @@ function Message({ data, repeat, self }) {
   };
   const handleClose = () => setOpen(false);
 
+  const navigate = useNavigate();
+
   const messageTime = () => {
     let date = fromatDate(new Date(data.createdAt));
 
@@ -40,13 +44,17 @@ function Message({ data, repeat, self }) {
     return date;
   };
 
-  const requestHospital = async () => {
-    alert('API 연결 전');
-    // try {
-    //   await axiosInstance.get('');
-    // } catch (err) {
-    //   alert(err);
-    // }
+  const requestHospital = async e => {
+    const isConfirmed = window.confirm('결과 페이지로 이동합니다');
+    if (!isConfirmed) {
+      return;
+    }
+
+    navigate('/hospitals/maps', {
+      state: {
+        departments: [e.target.innerText]
+      }
+    });
   };
 
   return (
@@ -57,29 +65,39 @@ function Message({ data, repeat, self }) {
         aria-labelledby='parent-modal-title'
         aria-describedby='parent-modal-description'
       >
-        <Box sx={{ ...style, width: '60%' }}>
+        <Box sx={style}>
           <h2 id='parent-modal-title'>메시지 옵션</h2>
+          <p style={{ color: '#22a1d3', fontWeight: 'bold', fontStyle: 'italic' }}>
+            {data.content}
+          </p>
           <EditModal msgId={data.id} msg={data.content} setOpens={setOpen} />
         </Box>
       </Modal>
       <Container self={self}>
         {self || (
-          <TopContainer repeat={repeat} self={self}>
-            {repeat || <ProfileImage user={data.user} insert={false} self={self} size={'3rem'} />}
+          <TopContainer repeat={repeat ? repeat : undefined} self={self}>
+            {repeat || (
+              <ProfileImage
+                user={data.user}
+                insert={false}
+                self={self}
+                size={'3rem'}
+                doctorProfile={data.doctorProfile}
+              />
+            )}
             {repeat || <Author self={self}>{data.user.name}</Author>}
           </TopContainer>
         )}
         <BottomContainer self={self}>
-          <Content self={self} onDoubleClick={handleOpen}>
-            {data.content.startsWith('dpt: ') ? (
+          <Content self={self} onClick={handleOpen}>
+            {data.content.startsWith('dpt: ') && data.user.role === 'DOCTOR' ? (
               <Suggestion>
-                <p style={{ margin: '4px 0 20px' }}>진료과 추천 정보가 제공되었습니다</p>
+                <p>진료과 추천 정보가 제공되었습니다</p>
                 <Button
                   variant='contained'
                   onClick={requestHospital}
-                  sx={{ width: '40%', backgroundColor: '#272424', fontSize: '1rem' }}
+                  sx={{ width: '80%', backgroundColor: '#272424' }}
                 >
-                  {' '}
                   {data.content.split(' ')[1]}
                 </Button>
               </Suggestion>
@@ -130,6 +148,8 @@ const BottomContainer = styled.div`
 const Author = styled.p`
   margin-right: ${({ self }) => (self ? '10px' : '0px')};
   margin-left: ${({ self }) => (self ? '0px' : '10px')};
+  margin-top: auto;
+  margin-bottom: auto;
   order: ${({ self }) => (self ? 1 : 2)};
   @media (min-width: 481px) {
     font-size: 1.4rem;
@@ -146,6 +166,9 @@ const Content = styled.div`
   max-width: 70%;
   height: auto;
   overflow: hidden;
+  @media (min-width: 490px) {
+    font-size: 1.2rem;
+  }
 `;
 
 const Suggestion = styled.p`
@@ -161,6 +184,9 @@ const Time = styled.p`
   margin-bottom: 0px;
   margin-right: ${({ self }) => (self ? '10px' : '0px')};
   margin-left: ${({ self }) => (self ? '0px' : '10px')};
+  @media (min-width: 490px) {
+    font-size: 1.2rem;
+  }
 `;
 
 export default Message;

@@ -18,11 +18,11 @@ function BoardForm({ initialValues = {}, onSubmit }) {
           mt: 3,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center', // 중앙 정렬
-          textAlign: 'center', // 텍스트 중앙 정렬
+          alignItems: 'center',
+          textAlign: 'center',
         }}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h3" gutterBottom>
           {initialValues.id ? 'Update Board' : 'Create Board'}
         </Typography>
         <TextField

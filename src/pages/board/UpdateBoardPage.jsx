@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { axiosInstance } from '../../utils/axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import BoardForm from '../../components/board/BoardForm';
 import MainContainer from '../../components/global/MainContainer';
 import { Button, CircularProgress } from '@mui/material';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Authorization': `${token}`
+  };
+}
 
 function UpdateBoardPage() {
   const { id } = useParams();
@@ -12,7 +19,9 @@ function UpdateBoardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/boards/${id}`)
+    axiosInstance.get(`/boards/${id}`, {
+      headers: getAuthHeaders()
+    })
       .then(response => setBoard(response.data))
       .catch(error => console.error('게시판 정보를 가져오는 데 실패했습니다.'))
       .finally(() => setLoading(false));
@@ -21,7 +30,9 @@ function UpdateBoardPage() {
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      await axios.put(`http://localhost:8080/boards/${id}`, data);
+      await axiosInstance.put(`/boards/${id}`, data, {
+        headers: getAuthHeaders()
+      });
       navigate(`/boards/${id}`);
     } catch (error) {
       console.error('게시판 업데이트 오류:', error);
@@ -35,7 +46,6 @@ function UpdateBoardPage() {
 
   return (
     <MainContainer>
-
       <BoardForm onSubmit={handleSubmit} initialValues={board} />
     </MainContainer>
   );

@@ -1,109 +1,107 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
+import { axiosInstance } from '../../utils/axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import PostList from '../../components/board/PostList';
 import MainContainer from '../../components/global/MainContainer';
 import Pagination from '../../components/board/Pagination';
-import SearchBar from '../../components/board/SearchBar';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from '@mui/material';
+import PostSearchBar from '../../components/board/PostSearchBar';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Alert, Box, Typography } from '@mui/material';
 
 function BoardDetailPage() {
-  const { id } = useParams();
-  const [board, setBoard] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const navigate = useNavigate();
+    const { id } = useParams();
+    const [board, setBoard] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const navigate = useNavigate();
 
-  const fetchPosts = useCallback((page, query) => {
-    setLoading(true);
-    axios.get(`http://localhost:8080/posts/board/${id}`, {
-      params: {
-        title: query,
-        page: page,
-        size: 6
-      }
-    })
-      .then(response => {
-        setPosts(response.data.content);
-        setTotalPages(response.data.totalPages);
-      })
-      .catch(error => setError('게시물을 가져오는 데 실패했습니다.'))
-      .finally(() => setLoading(false));
-  }, [id]);
+    const fetchPosts = useCallback((page, query) => {
+        setLoading(true);
+        axiosInstance.get(`/posts/board/${id}`, {
+            params: {
+                title: query || '',
+                page: page,
+                size: 6
+            }
+        })
+        .then(response => {
+            setPosts(response.data.content);
+            setTotalPages(response.data.totalPages);
+        })
+        .catch(() => setError('게시물을 가져오는 데 실패했습니다.'))
+        .finally(() => setLoading(false));
+    }, [id]);
 
-  useEffect(() => {
-    axios.get(`http://localhost:8080/boards/${id}`)
-      .then(response => setBoard(response.data))
-      .catch(error => setError('게시판 정보를 가져오는 데 실패했습니다.'));
+    useEffect(() => {
+        axiosInstance.get(`/boards/${id}`)
+            .then(response => setBoard(response.data))
+            .catch(() => setError('게시판 정보를 가져오는 데 실패했습니다.'));
 
-    fetchPosts(currentPage, searchQuery);
-  }, [id, currentPage, searchQuery, fetchPosts]);
+        fetchPosts(currentPage, searchQuery);
+    }, [id, currentPage, searchQuery, fetchPosts]);
 
-  const handleDeleteBoard = async () => {
-    try {
-      await axios.delete(`http://localhost:8080/boards/${id}`);
-      navigate('/boards');
-    } catch (error) {
-      setError('게시판 삭제에 실패했습니다.');
-    } finally {
-      setOpenDialog(false);
-    }
-  };
+    const handleDeleteBoard = async () => {
+        try {
+            await axiosInstance.delete(`/boards/${id}`);
+            navigate('/boards');
+        } catch {
+            setError('게시판 삭제에 실패했습니다.');
+        } finally {
+            setOpenDialog(false);
+        }
+    };
 
-  const handleSearch = (data) => {
-    if (data.content.length === 0) {
-      alert("검색 결과가 없습니다.");
-    } else {
-      setPosts(data.content);
-      setTotalPages(data.totalPages);
-      setCurrentPage(0); // 페이지 리셋
-    }
-  };
+    const handleSearch = (data) => {
+        setPosts(data.content);
+        setTotalPages(data.totalPages);
+        setCurrentPage(0);
+    };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
-  if (loading) return <CircularProgress />;
-  if (error) return <Alert severity="error">{error}</Alert>;
-  if (!board) return <p>게시판을 불러오는 중입니다...</p>;
+    if (loading) return <CircularProgress />;
+    if (error) return <Alert severity="error">{error}</Alert>;
+    if (!board) return <p>게시판을 불러오는 중입니다...</p>;
 
-  return (
-    <MainContainer>
-    <br/>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-        <SearchBar onSearch={handleSearch} searchType="posts" />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h1>{board.name}</h1>
-        <div>
-          <Link to={`/boards/update/${id}`}>
-            <Button variant="contained" color="primary" style={{ marginRight: '8px' }}>UPDATE</Button>
-          </Link>
-          <Button variant="contained" color="error" onClick={() => setOpenDialog(true)}>Delete</Button>
-        </div>
-      </div>
-      <PostList posts={posts} boardId={id} />
-      <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={handlePageChange} />
+    return (
+        <MainContainer>
+            <Box sx={{ marginTop: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 2 }}>
+                    <PostSearchBar onSearch={handleSearch} />
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{board.name}</Typography>
+                    <Box>
+                        <Button component={Link} to={`/boards/update/${id}`} variant="contained" color="primary" sx={{ marginRight: 1 }}>
+                            UPDATE
+                        </Button>
+                        <Button variant="contained" color="error" onClick={() => setOpenDialog(true)}>
+                            DELETE
+                        </Button>
+                    </Box>
+                </Box>
+                <PostList posts={posts} boardId={id} />
+                <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+                    <Pagination totalPages={totalPages} currentPage={currentPage} onPageChange={handlePageChange} />
+                </Box>
+            </Box>
 
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-      >
-        <DialogTitle>게시판 삭제</DialogTitle>
-        <DialogContent>정말로 게시판을 삭제하시겠습니까?</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">취소</Button>
-          <Button onClick={handleDeleteBoard} color="error">삭제</Button>
-        </DialogActions>
-      </Dialog>
-    </MainContainer>
-  );
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                <DialogTitle>게시판 삭제</DialogTitle>
+                <DialogContent>정말로 게시판을 삭제하시겠습니까?</DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)} color="primary">취소</Button>
+                    <Button onClick={handleDeleteBoard} color="error">삭제</Button>
+                </DialogActions>
+            </Dialog>
+        </MainContainer>
+    );
 }
 
 export default BoardDetailPage;

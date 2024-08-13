@@ -13,7 +13,7 @@ function ChatRoomDetail({ data, selectedIndex }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const handleWrapperClick = () => {
-    if (auth.role === 'ADMIN' && data.type.type !== '서비스센터 상담') {
+    if (auth.role === 'ADMIN' && data.type.type !== '서비스센터 상담' && selectedIndex === 2) {
       return;
     }
 
@@ -21,7 +21,7 @@ function ChatRoomDetail({ data, selectedIndex }) {
   };
 
   return (
-    <Container hovered={isHovered}>
+    <Container hovered={isHovered ? true : undefined}>
       <Wrapper
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -39,32 +39,52 @@ function ChatRoomDetail({ data, selectedIndex }) {
             )
           ) : selectedIndex === 1 ? (
             data.user1.name
-          ) : auth.role !== 'USER' ? (
-            data.user1.name
-          ) : data.user2 ? (
-            <>
-              {data.user2.role === 'DOCTOR' ? '(의사) ' : '(관리자) '} {data.user2.name}
+          ) : data.status.status === '수락 대기' ? (
+            data.type.type
+          ) : data.user1.id === auth.userId ? (
+            <div>
+              {data.user2.name}
+              <Role>{data.user2.role === 'USER' ? '' : ` ${data.user2.role}`}</Role>
               {data.user2.role === 'DOCTOR' && (
                 <HospitalName>{data.doctorProfile.hospitalName}</HospitalName>
               )}
-            </>
+            </div>
           ) : (
-            data.type.type
+            <div>
+              {data.user1.name}
+              <Role>{data.user1.role === 'USER' ? '' : ` ${data.user1.role}`}</Role>
+
+              {data.user1.role === 'DOCTOR' && (
+                <HospitalName>{data.doctorProfile.hospitalName}</HospitalName>
+              )}
+            </div>
           )}
           {selectedIndex === 2 && <ChatType>{data.type.type}</ChatType>}
         </Title>
         <Preview>
           {selectedIndex !== 2 ? (
             <>
-              {data.status.status !== '진행' && `(${data.status.status})`}{' '}
-              {data.lastMessage !== null
-                ? data.lastMessage.content.replace(/\n/g, ' ')
-                : '메시지가 없습니다'}
+              {data?.newMessageCount > 0 && (
+                <NewMessageCount>{data.newMessageCount}</NewMessageCount>
+              )}
+              <PreviewText>
+                {data.status.status !== '진행' && `(${data.status.status})`}{' '}
+                {data.lastMessage !== null
+                  ? data.lastMessage.content
+                      .replace(/\n/g, ' ')
+                      .replace(
+                        'dpt: ',
+                        data.lastMessage.user.role === 'DOCTOR' ? '진료과 정보 제공: ' : 'dpt: '
+                      )
+                  : '메시지가 없습니다'}
+              </PreviewText>
             </>
           ) : (
             <div style={{ display: 'flex' }}>
-              <ProfileImage user={data.user1} size={'3rem'} />
-              {data.user2 ? <ProfileImage user={data.user2} size={'3rem'} /> : null}
+              <ProfileImage user={data.user1} size={'3rem'} doctorProfile={data.doctorProfile} />
+              {data.user2 ? (
+                <ProfileImage user={data.user2} size={'3rem'} doctorProfile={data.doctorProfile} />
+              ) : null}
             </div>
           )}
         </Preview>
@@ -79,6 +99,7 @@ function ChatRoomDetail({ data, selectedIndex }) {
                 : data.user1
           }
           size={'6rem'}
+          doctorProfile={data.doctorProfile}
         />
       )}
     </Container>
@@ -89,8 +110,8 @@ const Container = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-sizing: border-box;
-  width: 95%;
+  max-width: 60dvh;
+  width: 80%;
   height: 18dvh;
   border: 2px solid black;
   border-radius: 10px;
@@ -114,10 +135,20 @@ const Title = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   @media (max-width: 768px) {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+  }
+`;
+
+const Role = styled.span`
+  font-size: 1.3rem;
+  font-style: italic;
+  color: #9da1a2;
+  font-weight: 400;
+  @media (max-width: 500px) {
+    font-size: 0.8rem;
   }
 `;
 
@@ -136,11 +167,40 @@ const ChatType = styled.p`
 `;
 
 const Preview = styled.div`
+  display: flex;
+  align-items: center;
   width: 70%;
-  font-size: 1.5rem;
-  overflow: hidden;
+  font-size: 1.1rem;
+  text-overflow: ellipsis;
   @media (max-width: 768px) {
     font-size: 1rem;
+  }
+`;
+
+const PreviewText = styled.p`
+  overflow: hidden;
+  white-space: nowrap;
+  width: 100%;
+`;
+
+const NewMessageCount = styled.p`
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  line-height: 30px;
+  background-color: #ff4d4d;
+  border-radius: 50%;
+  color: #fff; /* 숫자 색상 */
+  font-weight: bold;
+  margin: auto 10px auto 0px;
+  font-size: 1rem;
+  padding: 1px;
+  @media (max-width: 500px) {
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    font-size: 0.9rem;
   }
 `;
 

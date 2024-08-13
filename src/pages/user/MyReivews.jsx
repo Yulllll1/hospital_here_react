@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {Typography, Card, CardContent, CardActions, Button, Paper, Box, TextField, IconButton} from "@mui/material";
-import { Star, StarBorder } from "@mui/icons-material";
-import {
-  axiosInstance,
-  fetchUserReviews,
-  userInformation
-} from '../../utils/axios';
+import { Typography, Paper, Box } from "@mui/material";
+import { axiosInstance, fetchUserReviews, userInformation } from '../../utils/axios';
 import MainContainer from "../../components/global/MainContainer";
+import MyReviewCard from "../../components/MyReviewCard";
 
 const MyReviews = () => {
   const [state, setState] = useState({
@@ -14,6 +10,7 @@ const MyReviews = () => {
     editingReviewId: null,
     editedContent: "",
     editedRating: 0,
+    username: ""
   });
 
   useEffect(() => {
@@ -44,7 +41,7 @@ const MyReviews = () => {
         headers: {
           Authorization: `${token}`,
         }
-      } );
+      });
       setState((prevState) => ({
         ...prevState,
         reviews: prevState.reviews.filter((review) => review.id !== reviewId),
@@ -105,43 +102,18 @@ const MyReviews = () => {
     }
   };
 
-  const renderStars = (rating, editable = false) => {
-    const maxRating = 5;
-    const filledStars = Array.from({ length: rating }, (_, index) => (
-      <IconButton
-        key={index}
-        onClick={() =>
-          editable &&
-          setState((prevState) => ({
-            ...prevState,
-            editedRating: index + 1,
-          }))
-        }
-        disabled={!editable}
-      >
-        <Star style={{ color: "#FFD700" }} />
-      </IconButton>
-    ));
-    const emptyStars = Array.from(
-      { length: maxRating - rating },
-      (_, index) => (
-        <IconButton
-          key={index + rating}
-          onClick={() =>
-            editable &&
-            setState((prevState) => ({
-              ...prevState,
-              editedRating: rating + index + 1,
-            }))
-          }
-          disabled={!editable}
-        >
-          <StarBorder style={{ color: "#FFD700" }} />
-        </IconButton>
-      )
-    );
+  const handleRatingChange = (newRating) => {
+    setState((prevState) => ({
+      ...prevState,
+      editedRating: newRating,
+    }));
+  };
 
-    return [...filledStars, ...emptyStars];
+  const handleContentChange = (event) => {
+    setState((prevState) => ({
+      ...prevState,
+      editedContent: event.target.value,
+    }));
   };
 
   const { reviews, editingReviewId, editedContent, editedRating, username } = state;
@@ -155,78 +127,20 @@ const MyReviews = () => {
         <Box sx={{ margin: "20px 0", borderBottom: "1px solid grey" }}></Box>
         {reviews.length > 0 ? (
           reviews.map((review) => (
-            <Card key={review.id} sx={{ marginBottom: 2 }}>
-              <CardContent>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  {editingReviewId === review.id
-                    ? renderStars(editedRating, true)
-                    : renderStars(review.rating)}
-                </div>
-                {editingReviewId === review.id ? (
-                  <TextField
-                    fullWidth
-                    multiline
-                    minRows={2}
-                    variant="outlined"
-                    value={editedContent}
-                    onChange={(e) =>
-                      setState((prevState) => ({
-                        ...prevState,
-                        editedContent: e.target.value,
-                      }))
-                    }
-                  />
-                ) : (
-                  <Typography variant="h6">{review.content}</Typography>
-                )}
-                <Typography variant="body2" color="textSecondary">
-                  병원: {review.hospitalName} | 작성일: {review.created_at} | 작성자: {username}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                {editingReviewId === review.id ? (
-                  <>
-                    <Button
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                      onClick={() => saveEditedReview(review.id)}
-                    >
-                      저장
-                    </Button>
-                    <Button size="small" variant="outlined" onClick={cancelEdit}>
-                      취소
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() =>
-                        editReview(review.id, review.content, review.rating)
-                      }
-                    >
-                      수정
-                    </Button>
-                    <Button
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      onClick={() => deleteReview(review.id)}
-                    >
-                      삭제
-                    </Button>
-                  </>
-                )}
-              </CardActions>
-            </Card>
+            <MyReviewCard
+              key={review.id}
+              review={review}
+              isEditing={editingReviewId === review.id}
+              editedContent={editedContent}
+              editedRating={editedRating}
+              onEdit={editReview}
+              onDelete={deleteReview}
+              onCancelEdit={cancelEdit}
+              onSaveEdit={() => saveEditedReview(review.id)}
+              onRatingChange={handleRatingChange}
+              onContentChange={handleContentChange}
+              username={username}
+            />
           ))
         ) : (
           <Typography variant="body1">작성한 리뷰가 없습니다.</Typography>

@@ -11,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PostCodeModal from '../../components/PostCodeModal';
+import ProfileImageUpload from './ProfileImageUpload';
 
 const theme = createTheme({
   palette: {
@@ -31,7 +32,34 @@ const MyPage = () => {
     dialogOpen: false,
     postcodeOpen: false,
     addressData: { address: '', addressDetail: '' },
+    imageUploadOpen: false,
   });
+  const handleAvatarClick = () => {
+    setState((prevState) => ({
+      ...prevState,
+      imageUploadOpen: true,
+    }));
+  };
+
+  const handleImageUploadClose = () => {
+    setState((prevState) => ({
+      ...prevState,
+      imageUploadOpen: false,
+    }));
+  };
+
+  const handleImageUpload = (imageUrl) => {
+    setState((prevState) => ({
+      ...prevState,
+      userInfo: {
+        ...prevState.userInfo,
+        img: imageUrl,
+      },
+      imageUploadOpen: false,
+    }));
+  };
+
+
 
   const navigate = useNavigate();
   const setAuthState = useSetRecoilState(userauthState);
@@ -166,7 +194,12 @@ const MyPage = () => {
     navigate('/my-activity');
   }
 
-  const { userInfo, editField, formData, dialogOpen, postcodeOpen, addressData } = state;
+  const OnClickAdminPage = () => {
+    navigate('/admin-page');
+  }
+
+  const { userInfo, editField, formData, dialogOpen, postcodeOpen, addressData, imageUploadOpen } = state;
+
 
   return (
     <MainContainer>
@@ -180,8 +213,12 @@ const MyPage = () => {
           </Button>
           <Box sx={{ margin: '20px 0', borderBottom: '1px solid grey' }}></Box>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <Avatar sx={{ width: '40px', height: '40px', marginRight: '10px' }}>
-              {userInfo ? userInfo.name[0] : 'N/A'}
+            <Avatar
+              sx={{ width: '40px', height: '40px', marginRight: '10px', cursor: 'pointer' }}
+              onClick={handleAvatarClick}
+              src={userInfo?.image}
+            >
+              {userInfo && !userInfo.img ? userInfo.name[0] : ''}
             </Avatar>
             <Typography variant="body1" sx={{ flexGrow: 1 }}>
               {userInfo ? userInfo.role : '일반 회원'}
@@ -261,7 +298,7 @@ const MyPage = () => {
               </Box>
             )}
           </form>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', marginBottom: '10px' }}>
             <Button variant="contained" color="black" onClick={handleLogoutClick}>
               로그아웃
             </Button>
@@ -269,9 +306,20 @@ const MyPage = () => {
               회원 탈퇴
             </Button>
           </Box>
+          <Button variant="contained" color="black" onClick={OnClickAdminPage}>관리자 페이지</Button>
         </ThemeProvider>
       </Paper>
-
+      <Dialog open={imageUploadOpen} onClose={handleImageUploadClose}>
+        <DialogTitle>프로필 이미지 업로드</DialogTitle>
+        <DialogContent>
+          <ProfileImageUpload userId={userInfo?.id} onImageUpload={handleImageUpload} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleImageUploadClose} color="primary">
+            취소
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog open={dialogOpen} onClose={handleCancelClick}>
         <DialogTitle>{getFieldLabel(editField)}</DialogTitle>
         <DialogContent>

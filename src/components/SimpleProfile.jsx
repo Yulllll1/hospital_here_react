@@ -1,19 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import ProfileImage from './chatMessage/ProfileImage';
+import { GetUserRoleString } from '../utils/stringUtil';
 
 function SimpleProfile(props) {
   return (
     <Container>
       <Head>
-        <ProfileImage user={props.user} size={'6rem'} />
+        <ProfileImage user={props?.user} size={'6rem'} hover={'no'} />
         <Wrapper>
-          <Name>{props.user.name}</Name>
-          <HospitalName>어디어디 병원</HospitalName>
-          <Departments>진료과목: 가정의학과, 외과</Departments>
+          <Div>
+            <Name>{props?.user.name}</Name>
+            <Role>{GetUserRoleString(props?.user.role)}</Role>
+          </Div>
+          {props?.user.role === 'DOCTOR' && (
+            <>
+              <HospitalName>{props?.doctorProfile.hospitalName}</HospitalName>
+              <Departments>진료과목: {props?.doctorProfile.department}</Departments>
+            </>
+          )}
         </Wrapper>
       </Head>
-      <Profile></Profile>
     </Container>
   );
 }
@@ -38,8 +45,22 @@ const Wrapper = styled.div`
   }
 `;
 
+const Div = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Role = styled.p`
+  font-size: 1rem;
+  font-style: italic;
+  @media (max-width: 481px) {
+    font-size: 0.8rem;
+  }
+`;
+
 const Name = styled.p`
   font-size: 2rem;
+  margin-right: 10px;
   @media (max-width: 481px) {
     font-size: 1.6rem;
   }
@@ -56,7 +77,5 @@ const Departments = styled.p`
     font-size: 1rem;
   }
 `;
-
-const Profile = styled.div``;
 
 export default SimpleProfile;

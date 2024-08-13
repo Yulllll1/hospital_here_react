@@ -2,12 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 import Nav from '../Nav';
 import Footer from '../Footer';
+import { CustomScrollBox } from '../CustomScrollBox';
 
 function MainContainer({ children, isChat }) {
   return (
     <Container>
       <Nav />
-      <Content isChat={isChat}>{children}</Content>
+        <CustomScrollBox>
+        <Content isChat={isChat}>{children}</Content>
+        </CustomScrollBox>
       <Footer />
     </Container>
   );
@@ -16,9 +19,10 @@ function MainContainer({ children, isChat }) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  max-width: 70dvh;
+  max-width: 60dvh;
   margin: 0 auto;
   height: 100dvh;
+  padding: 0;
 `;
 
 const Content = styled.div`

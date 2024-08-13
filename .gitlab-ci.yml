@@ -1,0 +1,47 @@
+# stages:
+#   - build
+#   - deploy
+
+# build:
+#   stage: build
+#   only:
+#     - dev
+#   cache:
+#     paths:
+#       - dist
+#   variables:
+#     CI: 'false'
+#   before_script:
+#     - echo 'build start'
+#     - sudo apt-get update
+#     - sudo apt-get install npm -y
+#     - sudo npm cache clean --force
+#     - sudo npm install -g n
+#     - sudo n stable
+#     - sudo npm install -g npm
+#     - npm --version
+#     - npm install --legacy-peer-deps
+#   script:
+#     - npm run build
+#   after_script:
+#     - echo 'build end'
+#   artifacts:
+#     paths:
+#       - ./build/
+#   tags:
+#     - react
+
+# dev_deploy:
+#   stage: deploy
+#   only:
+#     - dev
+#   before_script:
+#     - echo 'deploy start'
+#   script:
+#     - sudo cp -rfb /home/gitlab-runner/builds/pcQL_jW1/0/cloud_track/class_03/web_project3/team05/hospital_here_react/build /home/elice/hospital/frontend
+#     - sudo service nginx restart
+#   after_script:
+#     - echo $REACT_APP_API_BASE_URL
+#     - echo 'deploy end'
+#   tags:
+#     - react

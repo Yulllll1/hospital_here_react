@@ -14,10 +14,13 @@ import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
+import { useNavigate } from 'react-router';
 
 function ChatListPage() {
   const [auth] = useRecoilState(userauthState);
   const [chatRoom, setChatRoom] = useRecoilState(chatRoomState);
+
+  const navigate = useNavigate();
 
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,12 +82,17 @@ function ChatListPage() {
       setChatRoom(m => ({ ...m, rooms: chatRooms }));
       setData(
         Object.values(chatRooms).sort((a, b) => {
-          if (a.user2 === null) return 1;
-          if (a.user2 !== null) return -1;
+          if (a.status.status === '진행') return -1;
+          return 1;
         })
       );
     } catch (err) {
-      setError(err.response.data.message);
+      try {
+        setError(err.response.data.message);
+      } catch (err) {
+        alert('잘못된 접근입니다. 다시 시도해주세요');
+        navigate('/');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +106,41 @@ function ChatListPage() {
     <MainContainer>
       <Wrapper>
         <ButtonGroup
-          sx={{ width: '100%' }}
+          sx={{ width: '28%' }}
           variant='contained'
           ref={anchorRef}
           aria-label='Button group with a nested menu'
         >
-          <Button sx={{ width: '100%', fontSize: '1.2rem' }}>{options[selectedIndex]}</Button>
+          <Button
+            onClick={() => navigate('/chat/new')}
+            sx={{
+              width: '100%',
+              fontSize: '1.2rem',
+              '@media (max-width: 600px)': {
+                fontSize: '0.8rem'
+              }
+            }}
+          >
+            새로운 상담
+          </Button>
+        </ButtonGroup>
+        <ButtonGroup
+          sx={{ width: '70%' }}
+          variant='contained'
+          ref={anchorRef}
+          aria-label='Button group with a nested menu'
+        >
+          <Button
+            sx={{
+              width: '100%',
+              fontSize: '1.2rem',
+              '@media (max-width: 600px)': {
+                fontSize: '0.8rem'
+              }
+            }}
+          >
+            {options[selectedIndex]}
+          </Button>
           <Button
             sx={{ width: '5%' }}
             size='large'
@@ -116,6 +153,7 @@ function ChatListPage() {
             <ArrowDropDownIcon />
           </Button>
         </ButtonGroup>
+
         <Popper
           sx={{
             zIndex: 1
@@ -152,9 +190,12 @@ function ChatListPage() {
           )}
         </Popper>
       </Wrapper>
-      {error && <Notice>{error}</Notice>}
-      {isLoading && <Notice>로딩 중 입니다..</Notice>}
-      {data && data.map(e => <ChatRoomDetail key={e.id} data={e} selectedIndex={selectedIndex} />)}
+      <div style={{ height: '78dvh', overflowY: 'scroll' }}>
+        {error && <Notice>{error}</Notice>}
+        {isLoading && <Notice>로딩 중 입니다..</Notice>}
+        {data &&
+          data.map(e => <ChatRoomDetail key={e.id} data={e} selectedIndex={selectedIndex} />)}
+      </div>
     </MainContainer>
   );
 }

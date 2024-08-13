@@ -7,7 +7,7 @@ const NaverLoginButton = () => {
   const handleNaverLogin = async () => {
     try {
       console.log("네이버 로그인 시작");
-      window.location.href = "http://localhost:8080/oauth2/authorization/naver";
+      window.location.href = "https://kdt-cloud-3-team05-final.elicecoding.com/oauth2/authorization/naver";
     } catch (error) {
       console.error('네이버 로그인 실패', error);
     }

@@ -1,0 +1,53 @@
+import React, { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../firebase'; // Firebase 설정 파일 가져오기
+import { Box, Typography, CircularProgress } from '@mui/material';
+
+const ImageDropzone = ({ onImageUploaded }) => {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const file = acceptedFiles[0]; // 첫 번째 파일만 처리
+    setPreviewUrl(URL.createObjectURL(file));
+    setUploading(true);
+
+    try {
+      const imageRef = ref(storage, `images/${file.name}`);
+      await uploadBytes(imageRef, file);
+      const imageUrl = await getDownloadURL(imageRef);
+      onImageUploaded(imageUrl); // 부모 컴포넌트로 이미지 URL 전달
+    } catch (error) {
+      console.error('이미지 업로드 오류:', error);
+    } finally {
+      setUploading(false);
+    }
+  }, [onImageUploaded]);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: 'image/*',
+    multiple: false, // 여러 이미지 업로드를 원하지 않을 경우 false로 설정
+  });
+
+  return (
+    <Box
+      {...getRootProps()}
+      sx={{ border: '2px dashed grey', padding: 2, textAlign: 'center', cursor: 'pointer' }}
+    >
+      <input {...getInputProps()} />
+      <Typography variant="h6" gutterBottom>
+        Drag & Drop your image here or click to select
+      </Typography>
+      {uploading && <CircularProgress />}
+      {previewUrl && (
+        <Box sx={{ mt: 2 }}>
+          <img src={previewUrl} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto' }} />
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default ImageDropzone;

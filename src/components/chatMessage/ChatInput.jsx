@@ -12,7 +12,8 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: '50%',
+  maxWidth: '50dvh',
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -25,7 +26,12 @@ function ChatInput({ sendMessage, enable }) {
   const [input, setInput] = useState(enable ? '' : '입력할 수 없습니다');
 
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => {
+    if (enable) {
+      setOpen(true);
+    }
+  };
+
   const handleClose = () => setOpen(false);
 
   const button = useRef(null);
@@ -68,7 +74,7 @@ function ChatInput({ sendMessage, enable }) {
         aria-labelledby='parent-modal-title'
         aria-describedby='parent-modal-description'
       >
-        <Box sx={{ ...style, width: '60%' }}>
+        <Box sx={style}>
           <h2 id='parent-modal-title'>추가 기능</h2>
           <AdvancedModal sendMessage={sendMessage} setOpens={setOpen} />
         </Box>
@@ -100,7 +106,7 @@ const Container = styled.div`
   bottom: 8dvh;
   box-sizing: border-box;
   padding: 4px;
-  max-width: 70dvh;
+  max-width: 60dvh;
   width: 100%;
   height: 8dvh;
   padding: 5px;
@@ -113,13 +119,11 @@ const Input = styled.textarea`
   border-radius: 10px;
   background-color: #e8e0e0;
   padding: 1rem 15px;
-  font-size: 3rem;
-  line-height: 5dvh;
+  font-size: 1.8rem;
   resize: none;
   white-space: pre-line;
   @media (max-width: 481px) {
     font-size: 1.5rem;
-    /* padding: 1rem 15px; */
     line-height: 3dvh;
   }
 `;

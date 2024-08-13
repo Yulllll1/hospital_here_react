@@ -35,7 +35,7 @@ const Login = () => {
       setAuthState({ isLoggedIn: true, userId, role });
       navigate('/');
     } catch (error) {
-      let errorMessage = '로그인 실패';
+      let errorMessage = '비밀번호가 일치하지 않습니다';
       if (error.response && error.response.data && error.response.data.message) {
         errorMessage = error.response.data.message;
       }
@@ -49,11 +49,16 @@ const Login = () => {
   const navigateRegister = () => {
     navigate('/register');
   };
-
+  const navigateVerified = () => {
+    navigate('/email-verified');
+  };
+  const handelFindEmail = () => {
+    navigate('/find-email');
+  }
   const handleGoogleLogin = async () => {
     try {
       console.log('구글 로그인 시작');
-      window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+      window.location.href = 'https://kdt-cloud-3-team05-final.elicecoding.com/oauth2/authorization/google';
       navigate('/');
     } catch (error) {
       navigate('/');
@@ -95,10 +100,10 @@ const Login = () => {
       </Paper>
 
       <Container fixed fullWidth sx={{ margin: '15px 0', display: 'flex', flexDirection: 'row' }}>
-        <Button type="button" sx={{ flex: '1 1 auto' }}>
+        <Button type="button" sx={{ flex: '1 1 auto' }} onClick={handelFindEmail}>
           아이디 찾기
         </Button>
-        <Button type="button" sx={{ flex: '1 1 auto' }}>
+        <Button type="button" sx={{ flex: '1 1 auto' }} onClick={navigateVerified}>
           비밀번호 찾기
         </Button>
         <Button type="button" sx={{ flex: '1 1 auto' }} onClick={navigateRegister}>

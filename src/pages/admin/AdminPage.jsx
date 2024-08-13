@@ -38,10 +38,6 @@ const AdminPage = () => {
           <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}}
             onClick={(e) => {OnClickUserList(chatListLink)}}>채팅 관리</Button>
           <Box sx={{margin: '15px 0 auto', border: '1px solid grey' }}></Box>
-          <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}}>게시글 관리</Button>
-          <Box sx={{margin: '15px 0 auto', border: '1px solid grey' }}></Box>
-          <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}}>내가 쓴 게시글</Button>
-          <Box sx={{margin: '15px 0 auto', border: '1px solid grey' }}></Box>
           <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}} 
             onClick={(e) => {OnClickUserList(userListLink)}}>회원 목록
           </Button>

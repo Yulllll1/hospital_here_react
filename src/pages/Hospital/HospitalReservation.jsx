@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import MainContainer from '../../components/global/MainContainer';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -16,7 +16,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import axios from 'axios';
-import { format } from 'date-fns'; // 날짜 형식 변환
+import { format } from 'date-fns';
 import { CustomScrollBox } from '../../components/CustomScrollBox';
 import { axiosInstance } from '../../utils/axios';
 
@@ -25,7 +25,7 @@ const CustomFormControlLabel = styled(FormControlLabel)(({ theme }) => ({
   '& .MuiTypography-root': {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start'
+    justifyContent: 'flex-start',
   },
 }));
 
@@ -35,7 +35,7 @@ const generateTimeSlots = (startHour, endHour, interval) => {
     for (let minute = 0; minute < 60; minute += interval) {
       const time = new Date();
       time.setHours(hour, minute, 0, 0);
-      slots.push(format(time, 'HH:mm')); // 시간을 hh:mm 형식으로 변환 저장
+      slots.push(format(time, 'HH:mm'));
     }
   }
   return slots;
@@ -54,11 +54,14 @@ function HospitalReservation() {
     panel2: false,
     panel3: false,
   }); // accordion 열림 상태 초기에 false로 설정
+  const [isAvailable, setIsAvailable] = useState(true); // 예약 가능 여부
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/hospitals/${hospitalid}/departments`);
+        const response = await axiosInstance.get(`/api/hospitals/${hospitalid}/departments`);
         setDepartments(response.data);
         setLoading(false);
       } catch (err) {
@@ -69,6 +72,28 @@ function HospitalReservation() {
 
     fetchDepartments();
   }, [hospitalid]);
+
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (selectedDepartment && selectedDate && selectedTime) {
+        try {
+          const utcDate = format(selectedDate, 'yyyy-MM-dd');
+          const response = await axiosInstance.get('/api/reservations/check-availability', {
+            params: {
+              department: selectedDepartment,
+              date: utcDate,
+              timeSlot: selectedTime
+            }
+          });
+          setIsAvailable(response.data);
+        } catch (error) {
+          console.error('Error checking availability:', error);
+        }
+      }
+    };
+
+    checkAvailability();
+  }, [selectedDepartment, selectedDate, selectedTime]);
 
   // 진료과 선택 핸들러
   const handleDepartmentChange = (event) => {
@@ -83,7 +108,6 @@ function HospitalReservation() {
   // 날짜 선택 핸들러
   const handleDateChange = (date) => {
     if (date) {
-      // 날짜를 UTC로 변환하고 시간 부분을 설정
       const utcDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
       setSelectedDate(utcDate);
     } else {
@@ -99,7 +123,7 @@ function HospitalReservation() {
     }));
   };
 
-  // 시간 슬롯
+  // 시간 슬롯 생성
   const timeSlots = generateTimeSlots(8, 18, 30); // 8:00 ~ 18:00, 30분 간격
 
   // 예약 제출 핸들러
@@ -108,19 +132,31 @@ function HospitalReservation() {
       alert('모든 필드를 선택해 주세요.');
       return;
     }
+
+    // 사용자 정보 가져오기
+    const userId = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole');
+
     try {
-      // 날짜를 UTC로 변환
       const utcDate = format(selectedDate, 'yyyy-MM-dd');
 
-      //instance
-      const response = await axiosInstance.post('http://localhost:8080/api/reservations', {
+      const response = await axiosInstance.post('/api/reservations', {
+        hospitalid: hospitalid,
         department: selectedDepartment,
-        date: utcDate, // UTC로 변환된 날짜를 전송
-        timeSlot: selectedTime
+        date: utcDate,
+        timeSlot: selectedTime,
+        userId, // 사용자 ID 포함
+        userRole // 사용자 역할 포함
       });
+
       alert(response.data);
+      navigate('/success'); // 성공 시 성공 페이지로 이동
     } catch (error) {
-      alert('예약을 처리하는 동안 오류가 발생했습니다.');
+      if (error.response && error.response.data) {
+        alert(error.response.data);
+      } else {
+        alert('예약을 처리하는 동안 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -140,7 +176,7 @@ function HospitalReservation() {
             <Box>
               {departments.map((department) => (
                 <CustomFormControlLabel
-                  key={department.id} // 각 부서가 고유한 `id`를 가진다고 가정
+                  key={department.id}
                   control={
                     <Checkbox
                       value={department.name}
@@ -148,7 +184,7 @@ function HospitalReservation() {
                       onChange={handleDepartmentChange}
                     />
                   }
-                  label={department.name} // 부서 이름 표시
+                  label={department.name}
                   sx={{
                     backgroundColor: selectedDepartment === department.name ? 'lightblue' : 'transparent',
                     borderRadius: '4px',
@@ -197,7 +233,7 @@ function HospitalReservation() {
           </AccordionSummary>
           <AccordionDetails>
             <Box>
-              <Grid container spacing={2}> {/* grid로 한 줄에 세 개씩 정렬 */}
+              <Grid container spacing={2}>
                 {timeSlots.map((slot) => (
                   <Grid item xs={4} key={slot}>
                     <CustomFormControlLabel
@@ -227,7 +263,10 @@ function HospitalReservation() {
 
         {/* 예약 제출 버튼 */}
         <Box mt={2}>
-          <button onClick={handleSubmit} disabled={!selectedDepartment || !selectedDate || !selectedTime}>
+          <button 
+            onClick={handleSubmit} 
+            disabled={!selectedDepartment || !selectedDate || !selectedTime || !isAvailable}
+          >
             예약 제출
           </button>
         </Box>
