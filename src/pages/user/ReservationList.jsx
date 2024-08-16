@@ -270,7 +270,13 @@ const ReservationList = () => {
               <Typography variant="h6">{hospitalInfo.name}</Typography>
               <Box sx={{ margin: '20px 0', borderBottom: '1px solid grey' }}></Box>
               <Typography variant="body1">주소: {hospitalInfo.address}</Typography>
-              <Typography variant="body1">전화번호: {hospitalInfo.telephoneNumber && hospitalInfo.telephoneNumber.length > 2 ? hospitalInfo.telephoneNumber : "제공되지 않음"}</Typography>
+              <Typography variant="body1">
+                전화번호: {hospitalInfo.telephoneNumber && hospitalInfo.telephoneNumber.length > 2 ? (
+                <a href={`tel:${hospitalInfo.telephoneNumber}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  {hospitalInfo.telephoneNumber}
+                </a>
+              ) : "제공되지 않음"}
+              </Typography>
             </Box>
           ) : (
             <Typography>병원 정보를 불러오는 중입니다...</Typography>
