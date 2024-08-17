@@ -620,7 +620,7 @@ const HospitalList = (hospital) => {
                         onClick={() => handleMapClick(hospital)}
                         sx={{ color: '#4a885d' }}
                       >
-                        {isHospitalSelected ? <AddIcon /> : <RemoveIcon />}
+                        {selectedHospital && selectedHospital.id === hospital.id ? <RemoveIcon /> : <AddIcon />}
                       </IconButton>
 
                     </Box>
