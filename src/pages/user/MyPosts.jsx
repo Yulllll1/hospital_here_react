@@ -31,6 +31,14 @@ export const MyPosts = () => {
   const OnClickPostButton = (id) => {
     navigate(`/posts/${id}`);
   };
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
 
   const PostComponent = () => {
     return postList.map((post) => (
@@ -62,7 +70,7 @@ export const MyPosts = () => {
           {post.title}
         </Typography>
         <Typography variant="body2" sx={{ color: '#6E6E6E' }}>
-          {post.createdAt}
+          {formatDate(post.createdAt)}
         </Typography>
       </Box>
     ));
@@ -76,7 +84,6 @@ export const MyPosts = () => {
           margin: "10px",
           padding: 3,
           borderRadius: "10px",
-          backgroundColor: 'var(--paper-soft)',
           minHeight: '-webkit-fill-available',
           height: 'fit-content'
         }}

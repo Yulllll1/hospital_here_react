@@ -74,7 +74,7 @@ const RequestEmailVerification = () => {
           <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 5 }}>
             이메일 인증 및 비밀번호 재설정
           </Typography>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
             <TextF
               label="이메일"
               name="email"
@@ -86,7 +86,6 @@ const RequestEmailVerification = () => {
               margin="normal"
               disabled={state.codeSent}
               sx={{
-                width: '471px',
                 '& .MuiInputBase-root': {
                   width: '100%',
                 }

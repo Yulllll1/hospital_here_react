@@ -198,7 +198,7 @@ const UserInfoPage = () => {
 
   return (
     <MainContainer>
-      <Paper elevation={0} sx={{ margin: '10px', padding: 3, borderRadius: '10px', backgroundColor: 'var(--paper-soft)', minHeight: '-webkit-fill-available', height: 'fit-content' }}>
+      <Paper elevation={0} sx={{ margin: '10px', padding: 3, borderRadius: '10px', minHeight: '-webkit-fill-available', height: 'fit-content' }}>
 
           <Typography variant='h5' sx={{fontWeight: 'bold', display: 'inline', color: 'var(--main-common)' }}>
             내 정보 수정

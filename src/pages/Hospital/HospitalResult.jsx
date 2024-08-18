@@ -569,7 +569,7 @@ const HospitalResult = (hospital) => {
                         onClick={() => handleMapClick(hospital)}
                         sx={{ color: '#4a885d' }}
                       >
-                        {isHospitalSelected ? <AddIcon /> : <RemoveIcon />}
+                        {selectedHospital && selectedHospital.id === hospital.id ? <RemoveIcon /> : <AddIcon />}
                       </IconButton>
 
                     </Box>
@@ -578,6 +578,17 @@ const HospitalResult = (hospital) => {
                 {selectedHospital?.id === hospital.id && (
                   <Box sx={{ width: '100%' }}>
                     {renderMap()}
+                    <Box sx={{ bgcolor: '#F3F4F0', padding: 2, borderRadius: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', mt:2 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ 
+                          whiteSpace: 'pre-line',
+                          textAlign: 'center',
+                        }}
+                        >
+                        {hospital.formattedOpenHours}
+                      </Typography>
+                    </Box>
                     {renderReviews(hospital.id)}
                   </Box>
                 )}

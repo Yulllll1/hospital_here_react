@@ -240,6 +240,18 @@ const MapComponent = () => {
                     <Typography variant="body1"sx={{mt:1}}>
                       <strong>영업여부 :&nbsp;&nbsp;</strong>{selectedHospital.openStatusMessage}
                     </Typography>
+
+                    <Typography
+                        variant="body2"
+                        sx={{ 
+                          whiteSpace: 'pre-line',
+                          mt:2,
+                        }}
+                        >
+                        <strong>병원 영업 시간</strong>
+                        <br />
+                        {selectedHospital.formattedOpenHours}
+                      </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Btn onClick={handleReservation} sx={{ marginTop: '10px' }}>
                       병원 예약
