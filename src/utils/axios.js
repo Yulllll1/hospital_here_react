@@ -1,8 +1,9 @@
-import axios, { request } from 'axios';
+import axios from 'axios';
+import { deleteCookie } from '../utils/cookies';
 
 export const axiosInstance = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
-  withCredentials: true
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
@@ -12,7 +13,7 @@ axiosInstance.interceptors.response.use(
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const { data } = await axios
+        const data = await axios
           .create({
             baseURL: process.env.REACT_APP_API_BASE_URL,
             withCredentials: true
@@ -24,6 +25,8 @@ axiosInstance.interceptors.response.use(
         originalRequest.headers['Authorization'] = `${newToken}`;
         return axiosInstance(originalRequest);
       } catch (e) {
+        localStorage.removeItem('token');
+        deleteCookie('refreshToken');
         return Promise.reject(e);
       }
     }

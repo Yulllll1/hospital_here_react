@@ -9,7 +9,7 @@ const ImageDropzone = ({ onImageUploaded }) => {
   const [uploading, setUploading] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles) => {
-    const file = acceptedFiles[0]; // 첫 번째 파일만 처리
+    const file = acceptedFiles[0];
     setPreviewUrl(URL.createObjectURL(file));
     setUploading(true);
 
@@ -17,7 +17,7 @@ const ImageDropzone = ({ onImageUploaded }) => {
       const imageRef = ref(storage, `images/${file.name}`);
       await uploadBytes(imageRef, file);
       const imageUrl = await getDownloadURL(imageRef);
-      onImageUploaded(imageUrl); // 부모 컴포넌트로 이미지 URL 전달
+      onImageUploaded(imageUrl);
     } catch (error) {
       console.error('이미지 업로드 오류:', error);
     } finally {
@@ -28,7 +28,7 @@ const ImageDropzone = ({ onImageUploaded }) => {
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: 'image/*',
-    multiple: false, // 여러 이미지 업로드를 원하지 않을 경우 false로 설정
+    multiple: false,
   });
 
   return (

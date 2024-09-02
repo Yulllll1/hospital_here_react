@@ -1,11 +1,14 @@
-import { Button } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import AdvancedModal from '../chatRoom/modal/AdvancedModal';
-import { useRecoilState } from 'recoil';
-import { stompState } from '../../utils/atom';
+import { useRecoilValue } from 'recoil';
+import { chatRoomState, stompState, userauthState } from '../../utils/atom';
+import { useParams } from 'react-router';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import SendIcon from '@mui/icons-material/Send';
 
 const style = {
   position: 'absolute',
@@ -21,13 +24,19 @@ const style = {
 };
 
 function ChatInput({ sendMessage, enable }) {
-  const [stomp] = useRecoilState(stompState);
+  const params = useParams();
+
+  const stomp = useRecoilValue(stompState);
+  const chatRoom = useRecoilValue(chatRoomState);
+  const auth = useRecoilValue(userauthState);
 
   const [input, setInput] = useState(enable ? '' : '입력할 수 없습니다');
 
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
-    if (enable) {
+    const room = chatRoom.rooms[`ch_${params.chatRoomId}`];
+
+    if (auth.userId === room.user1.id || auth.userId === room.user2.id) {
       setOpen(true);
     }
   };
@@ -79,52 +88,72 @@ function ChatInput({ sendMessage, enable }) {
           <AdvancedModal sendMessage={sendMessage} setOpens={setOpen} />
         </Box>
       </Modal>
-      <Button
-        variant='contained'
-        sx={{ width: '5%', backgroundColor: '#cac9c9', fontSize: '2rem', color: 'black' }}
+      <IconButton
+        sx={{
+          marginTop: 1,
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          backgroundColor: 'var(--paper-soft)',
+          '&:hover': {
+            backgroundColor: 'var(--paper-deep)'
+          }
+        }}
         onClick={handleOpen}
       >
-        +
-      </Button>
+        <AddIcon />
+      </IconButton>
       <Input
         value={input}
         onChange={e => setInput(e.target.value)}
         onKeyDown={handleInput}
         readOnly={!enable}
       />
-      <Button variant='contained' ref={button} onClick={handleClick} sx={{ width: '3%' }}>
-        전송
-      </Button>
+      <IconButton
+        ref={button}
+        onClick={handleClick}
+        sx={{
+          marginTop: 1,
+          width: '40px',
+          height: '40px',
+          borderRadius: '50%',
+          color: 'black',
+          backgroundColor: 'var(--main-common)',
+          '&:hover': {
+            backgroundColor: 'var(--main-deep)'
+          }
+        }}
+      >
+        <SendIcon sx={{ fontSize: 'medium', color: 'white' }} />
+      </IconButton>
     </Container>
   );
 }
 
 const Container = styled.div`
+  background-color: white;
   display: flex;
   justify-content: space-around;
   position: fixed;
   bottom: 8dvh;
   box-sizing: border-box;
-  padding: 4px;
   max-width: 60dvh;
   width: 100%;
-  height: 8dvh;
-  padding: 5px;
-  background-color: #cac9c9;
+  height: 7dvh;
 `;
 
 const Input = styled.textarea`
-  outline: 1px solid;
-  width: 80%;
+  border: 2px solid #e2e2e2;
+  width: 70%;
   border-radius: 10px;
-  background-color: #e8e0e0;
-  padding: 1rem 15px;
-  font-size: 1.8rem;
+  background-color: white;
+  padding: 2.3dvh 15px 0;
+  font-size: 1rem;
   resize: none;
   white-space: pre-line;
-  @media (max-width: 481px) {
-    font-size: 1.5rem;
-    line-height: 3dvh;
+  @media (max-width: 500px) {
+    font-size: 0.8rem;
+    width: 55%;
   }
 `;
 

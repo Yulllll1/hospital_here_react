@@ -5,6 +5,7 @@ import BoardList from '../../components/board/BoardList';
 import Pagination from '../../components/board/Pagination';
 import BoardSearchBar from '../../components/board/BoardSearchBar';
 import { CircularProgress, Alert, Container, Grid, Typography, Box } from '@mui/material';
+import { Btn, TextF } from '../../components/global/CustomComponents';
 
 function BoardListPage() {
     const [boards, setBoards] = useState([]);
@@ -51,32 +52,20 @@ function BoardListPage() {
     return (
         <MainContainer>
             <Container>
-                <Box sx={{ flexGrow: 1, marginTop: 2 }}>
+                <Box sx={{ flexGrow: 1, marginTop: 3 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}>
-                                <BoardSearchBar onSearch={handleSearch} />
+                            <Box sx = {{ display: 'flex', justifyContent: 'center'}}>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
+                                    게시판
+                                </Typography>
                             </Box>
                         </Grid>
-
                         <Grid item xs={12}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    flexDirection: 'column',
-                                    bgcolor: '#F3F4F0',
-                                    borderRadius: '20px',
-                                    padding: 3,
-                                    boxShadow: 3,
-                                }}
-                            >
-                                <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
-                                    게시판 목록
-                                </Typography>
-                                <BoardList boards={boards} />
-                            </Box>
+                            <BoardSearchBar onSearch={handleSearch} />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <BoardList boards={boards}></BoardList>
                         </Grid>
 
                         <Grid item xs={12}>

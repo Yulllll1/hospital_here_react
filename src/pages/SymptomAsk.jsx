@@ -8,6 +8,7 @@ import { Loading } from '../components/Loading';
 import { axiosInstance } from '../utils/axios';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { useMediaQuery } from '@mui/material';
+import { Btn, TextF } from '../components/global/CustomComponents';
 
 function SymptomAsk() {
   const [textFieldValue, setTextFieldValue] = useState('');
@@ -81,19 +82,15 @@ function SymptomAsk() {
       <Container>
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sx={{ marginTop: '30%' }}>
-              <Stepper activeStep={0} alternativeLabel>
-                {steps.map((label, index) => (
-                  <Step key={index}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
+            <Grid item xs={12} sx={{ marginTop: '40%' }}>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant='h1'>01</Typography>
-              <Typography variant='h5'>증상에 대해 자유롭게 설명해주세요.</Typography>
+              <Typography variant='h3' sx={{ color: '#4A885D', fontWeight: 'bold' }}>1</Typography>
+              <Typography variant='h5' sx={{ fontWeight: 'bold' }}>증상에 대해 자유롭게 설명해주세요.</Typography>
               <Typography variant='h8' sx={{ color: 'grey' }}>예시: 배가 아프고 식은땀이 나</Typography>
+              {/* <Box>
+                <img src='/images/symptom.png'/>
+              </Box> */}
             </Grid>
             <Grid item xs={10}>
               <TextField
@@ -110,18 +107,12 @@ function SymptomAsk() {
               />
             </Grid>
             <Grid item xs={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Button 
-                variant="contained" 
-                color="primary" 
+              <Btn
                 onClick={handleNext} 
                 sx={{
-                  marginTop: 2,
                   width: 30, 
                   height: 30, 
                   borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   padding: 0,
                   minWidth: 0,
                   minHeight: 0,
@@ -129,23 +120,19 @@ function SymptomAsk() {
                 }}
               >
                 <ArrowForwardIcon sx={{ fontSize: '16px' }} />
-              </Button>
+              </Btn>
             </Grid>
             {/* 간단한 증상 */}
-            <Grid item xs={12} sx = {{ marginTop: '40%',
+            <Grid item xs={12} sx = {{ marginTop: '20%',
                display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Button onClick={toggleDrawer(true)}
-                variant="contained" 
-                color="primary" 
+              <Btn onClick={toggleDrawer(true)} 
                 sx={{
-                  borderRadius: '40px',
-                  padding: '10px 20px',
-                  textTransform: 'none',
+                  width: '200px',
                   fontSize: '16px'
                 }}
               >
                 간단하게 찾고 싶다면?
-              </Button>
+              </Btn>
             </Grid>
           </Grid>
         </Box>

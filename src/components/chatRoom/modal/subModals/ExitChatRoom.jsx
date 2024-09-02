@@ -39,7 +39,15 @@ function ExitChatRoom() {
 
   return (
     <>
-      <Button onClick={handleClick}>채팅방 나가기</Button>
+      <Button
+        onClick={handleClick}
+        sx={{
+          color: 'var(--main-deep)',
+          fontWeight: 'bold'
+        }}
+      >
+        채팅방 나가기
+      </Button>
     </>
   );
 }

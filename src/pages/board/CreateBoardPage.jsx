@@ -45,6 +45,8 @@ function CreateBoardPage() {
           <>
             {error && <Alert severity="error">{error}</Alert>}
             <BoardForm onSubmit={handleSubmit} />
+
+            {/* 주석 처리
             <Box sx={{ mt: 4 }}>
               <Button
                 variant="contained"
@@ -54,6 +56,8 @@ function CreateBoardPage() {
                 Back to prev
               </Button>
             </Box>
+            */}
+            
           </>
         )}
       </Box>

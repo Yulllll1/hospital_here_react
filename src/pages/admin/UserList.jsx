@@ -4,11 +4,10 @@ import { Paper, Typography, Box, Button, IconButton, Tab } from "@mui/material";
 import Avatar from '@mui/material/Avatar';
 import { axiosInstance } from "../../utils/axios";
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import CheckIcon from '@mui/icons-material/Check';
 import { useNavigate } from "react-router";
 import { GetUserRoleString } from "../../utils/stringUtil";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-
+import { Loading } from "../../components/Loading";
 
 function stringToColor(string) {
   let hash = 0;
@@ -41,6 +40,7 @@ function StringAvatar(name) {
 
 const UserList = () =>{
 
+  const [loading, setLoading] = useState(false);
   const [userList, setUserList] = useState(null);
   const [pageSelect, setPageSelect] = useState(0);
   const [tabValue, setTabValue] = useState('0');
@@ -67,8 +67,8 @@ const UserList = () =>{
 
   const UserListComponent = (list) =>{
     return list.map(user => (
-      <Box fullWidth sx={{height: '45px', padding: '10px', margin: '15px 0 auto', border: '1px solid #BCBDBC', }}>
-        <Avatar sx={{float: 'left'}}></Avatar>
+      <Box fullWidth sx={{height: '45px', padding: '10px', margin: '15px 0 auto', border: '2px solid var(--paper-deep)', }}>
+        <Avatar src={user.image} sx={{float: 'left', cursor: 'pointer', marginBottom: '10px', backgroundColor: 'var(--main-soft)' }}></Avatar>
         <Typography variant="body1" sx={{display: 'inline-block', margin: '10px 0px 0px 15px'}}>{user.name}</Typography>
         <IconButton sx={{float: 'right', padding: '4px'}} onClick={(e) => OnClickUserDetail(e, user.id)}>
           <ArrowRightIcon fontSize="large"></ArrowRightIcon>
@@ -95,29 +95,29 @@ const UserList = () =>{
 
   return(
     <MainContainer>
-      <Paper elevation={6} sx={{margin: '10px', padding: 3, borderRadius: '10px' }}>
-        <Typography variant='h5' sx={{display: 'inline', color: '#6E6E6E'}}>
+      <Paper elevation={0} sx={{ margin: '10px', padding: 3, borderRadius: '10px', backgroundColor: 'var(--paper-soft)' }}> 
+        <Typography variant='h5' sx={{display: 'inline', color: 'var(--main-common)'}}>
           회원 목록
         </Typography>
         <TabContext value={tabValue}>
-          <TabList onChange={handleChange} sx={{margin: '20px 0 auto'}}>
-            <Tab label='전체' value='0' sx={{minWidth: '40px'}}/>
-            <Tab label='일반 회원' value='1' sx={{minWidth: '40px'}}/>
-            <Tab label='의사' value='2' sx={{minWidth: '40px'}}/>
-            <Tab label='관리자' value='3' sx={{minWidth: '40px'}}/>
+          <TabList onChange={handleChange} TabIndicatorProps={{style: {background: 'var(--main-common)'}}} sx={{margin: '20px 0 auto', ".Mui-selected": {color: 'var(--main-deep)'}}}>
+            <Tab label='전체' value='0' sx={{minWidth: '40px', color: 'var(--main-soft)'}}/>
+            <Tab label='일반 회원' value='1' sx={{minWidth: '40px', color: 'var(--main-soft)'}}/>
+            <Tab label='의사' value='2' sx={{minWidth: '40px', color: 'var(--main-soft)'}}/>
+            <Tab label='관리자' value='3' sx={{minWidth: '40px', color: 'var(--main-soft)'}}/>
           </TabList>
-          <Box sx={{border: '1px solid grey' }}></Box>
+          <Box sx={{border: '1px solid var(--paper-deep)' }}></Box>
             <TabPanel value='0' sx={{padding: '0'}}>
-            {userList ? <AllUserList /> : <Typography variant='body1'>Loading..</Typography>}
+            {userList ? <AllUserList /> : <Loading open={loading} />}
             </TabPanel>
             <TabPanel value='1' sx={{padding: '0'}}>
-            {userList ? <FilterUserList role='USER' /> : <Typography variant='body1'>Loading..</Typography>}
+            {userList ? <FilterUserList role='USER' /> : <Loading open={loading}/>}
             </TabPanel>    
             <TabPanel value='2' sx={{padding: '0'}}>
-            {userList ? <FilterUserList role='DOCTOR' /> : <Typography variant='body1'>Loading..</Typography>}
+            {userList ? <FilterUserList role='DOCTOR' /> : <Loading open={loading}/>}
             </TabPanel>      
             <TabPanel value='3' sx={{padding: '0'}}>
-            {userList ? <FilterUserList role='ADMIN' /> : <Typography variant='body1'>Loading..</Typography>}
+            {userList ? <FilterUserList role='ADMIN' /> : <Loading open={loading}/>}
             </TabPanel>  
         </TabContext>
       </Paper>

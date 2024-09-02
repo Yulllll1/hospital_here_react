@@ -31,7 +31,7 @@ const HospitalReviewCard = ({ review, isEditable = false, onRatingChange, onCont
   };
 
   return (
-    <Card sx={{ marginBottom: 2 }}>
+    <Card sx={{ marginBottom: 2, backgroundColor: 'var(--paper-soft)' }} elevation={0}>
       <CardContent>
         <div
           style={{

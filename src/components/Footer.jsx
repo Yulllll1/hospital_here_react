@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Box, BottomNavigation, BottomNavigationAction } from '@mui/material';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { BottomNavigation, BottomNavigationAction } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
 import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 
+const pathnameToLabel = pathname => {
+  switch (pathname) {
+    case '/':
+      return 'home';
+    case '/boards':
+      return 'community';
+    case '/chatlist':
+      return 'chat';
+    default:
+      return 'my';
+  }
+};
 
 function Footer() {
-  const [value, setValue] = useState(0);
   const navigate = useNavigate();
-  
+  const { pathname } = useLocation();
+
   //각 아이콘 누를 때 각 page로 navigate
   const handleChange = (event, newValue) => {
-    setValue(newValue);
     switch (newValue) {
       case 'home':
         navigate('/');
@@ -34,38 +44,50 @@ function Footer() {
     }
   };
 
-
   return (
-      <Box sx={{ width: '100%' }}>
-        <StyledFooterBar value={value} onChange={handleChange}>
-          <BottomNavigationAction
-          label="Home"
-          value="home"
-          icon={<HomeIcon />}
-          />
-          <BottomNavigationAction
-            label="Community"
-            value="community"
-            icon={<TextSnippetOutlinedIcon />}
-          />
-          <BottomNavigationAction
-            label="Chat"
-            value="chat"
-            icon={<SmsOutlinedIcon />}
-          />
-          <BottomNavigationAction 
-            label="My" 
-            value="my" 
-            icon={<PersonOutlineOutlinedIcon />} />
-        </StyledFooterBar>
-      </Box>
+    <StyledFooterBar value={pathnameToLabel(pathname)} onChange={handleChange}>
+      <BottomNavigationAction label='Home' value='home' sx={actionStyle} icon={<HomeIcon />} />
+      <BottomNavigationAction
+        label='Community'
+        value='community'
+        sx={actionStyle}
+        icon={<TextSnippetOutlinedIcon />}
+      />
+      <BottomNavigationAction
+        label='Chat'
+        value='chat'
+        sx={actionStyle}
+        icon={<SmsOutlinedIcon />}
+      />
+      <BottomNavigationAction
+        label='My'
+        value='my'
+        sx={actionStyle}
+        icon={<PersonOutlineOutlinedIcon color='red' />}
+      />
+    </StyledFooterBar>
   );
-};
+}
 
 const StyledFooterBar = styled(BottomNavigation)`
-  height: 8vh;
+  height: 8dvh;
   text-align: center;
   background-color: skyblue;
+  border-top: 1px solid #e9e9e9;
 `;
+
+const actionStyle = {
+  '&.Mui-selected': {
+    transition: 'paddsing-top 0.5s',
+    color: 'var(--main-deep)'
+  },
+  '&:hover': {
+    padding: '0 12px',
+    '.MuiBottomNavigationAction-label': {
+      fontSize: '0.875rem',
+      opacity: 1
+    }
+  }
+};
 
 export default Footer;

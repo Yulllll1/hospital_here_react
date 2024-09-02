@@ -10,7 +10,7 @@ function AdvancedModal({ sendMessage, setOpens }) {
   return (
     <React.Fragment>
       {auth.role === 'DOCTOR' && (
-        <DepartmentSuggestion sendMessage={sendMessage} setOpens={setOpens} />
+        <DepartmentSuggestion sendMessage={sendMessage} setOpens={setOpens} defaultValue={''} />
       )}
       <ExitChatRoom />
     </React.Fragment>

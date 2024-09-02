@@ -16,6 +16,7 @@ const SocialLoginSuccess = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('userId', userId);
       localStorage.setItem('role', role);
+      localStorage.setItem('userRole', role)
       setAuthState({ isLoggedIn: true, userId, role });
       navigate('/');
     } else {

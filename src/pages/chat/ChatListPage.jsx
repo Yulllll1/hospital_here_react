@@ -5,62 +5,49 @@ import styled from 'styled-components';
 import ChatRoomDetail from '../../components/chatRoom/ChatRoomDetail';
 import { useRecoilState } from 'recoil';
 import { chatRoomState, userauthState } from '../../utils/atom';
-import Button from '@mui/material/Button';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Grow from '@mui/material/Grow';
-import Paper from '@mui/material/Paper';
-import Popper from '@mui/material/Popper';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import { useNavigate } from 'react-router';
+import { Loading } from '../../components/Loading';
+import SockJS from 'sockjs-client';
+import { Stomp } from '@stomp/stompjs';
 
 function ChatListPage() {
   const [auth] = useRecoilState(userauthState);
   const [chatRoom, setChatRoom] = useRecoilState(chatRoomState);
-
   const navigate = useNavigate();
 
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [options, setOptions] = useState([
+  const [options] = useState([
     '상담 진행 목록',
     ...(auth.role !== 'USER' ? ['상담 수락 대기 목록'] : []),
     ...(auth.role === 'ADMIN' ? ['전체 상담 목록'] : [])
   ]);
 
-  const [open, setOpen] = useState(false);
-  const anchorRef = useRef(null);
   const [selectedIndex, setSelectedIndex] = useState(chatRoom.selectedIndex);
 
-  const handleMenuItemClick = (event, index) => {
+  const handleSelectChange = event => {
+    const index = options.indexOf(event.target.value);
     setSelectedIndex(index);
     setChatRoom(m => ({ ...m, selectedIndex: index }));
-    setOpen(false);
-  };
-
-  const handleToggle = () => {
-    setOpen(prevOpen => !prevOpen);
-  };
-
-  const handleClose = event => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
-
-    setOpen(false);
   };
 
   const fetchData = async () => {
     setError(false);
     setData([]);
     setIsLoading(true);
+    const token = localStorage.getItem('token');
     try {
       const response = await axiosInstance.get(
         `${selectedIndex === 2 ? '/admin' : ''}/chatrooms${selectedIndex === 1 ? '/wait' : ''}`,
         {
+          headers: {
+            Authorization: `${token}`
+          },
           params: {
             userId: auth.userId || 0
           }
@@ -90,7 +77,7 @@ function ChatListPage() {
       try {
         setError(err.response.data.message);
       } catch (err) {
-        alert('잘못된 접근입니다. 다시 시도해주세요');
+        alert('잘못된 접근입니다');
         navigate('/');
       }
     } finally {
@@ -99,100 +86,70 @@ function ChatListPage() {
   };
 
   useEffect(() => {
+    const socket = new SockJS(`${process.env.REACT_APP_API_BASE_URL}/ws`);
+    const stomp = Stomp.over(socket);
+
+    stomp.connect({}, frame => {
+      setIsLoading(false);
+
+      stomp.subscribe(`/queue/list/${auth.userId}`, msg => {
+        const data = JSON.parse(msg.body);
+
+        setChatRoom(m => ({ ...m, rooms: { ...m.rooms, [`ch_${data.id}`]: data } }));
+        setData(e => e.map(m => (m.id === data.id ? data : m)));
+      });
+
+      stomp.subscribe(`/queue/list/${auth.role}`, msg => {
+        const data = JSON.parse(msg.body);
+
+        setChatRoom(m => ({ ...m, rooms: { ...m.rooms, [`ch_${data.id}`]: data } }));
+        setData(e => e.map(m => (m.id === data.id ? data : m)));
+      });
+    });
+
+    stomp.activate();
+
+    return () => stomp.deactivate();
+  }, []);
+
+  useEffect(() => {
     fetchData();
   }, [selectedIndex]);
 
   return (
     <MainContainer>
-      <Wrapper>
-        <ButtonGroup
-          sx={{ width: '28%' }}
-          variant='contained'
-          ref={anchorRef}
-          aria-label='Button group with a nested menu'
-        >
-          <Button
-            onClick={() => navigate('/chat/new')}
-            sx={{
-              width: '100%',
-              fontSize: '1.2rem',
-              '@media (max-width: 600px)': {
-                fontSize: '0.8rem'
-              }
-            }}
-          >
-            새로운 상담
-          </Button>
-        </ButtonGroup>
-        <ButtonGroup
-          sx={{ width: '70%' }}
-          variant='contained'
-          ref={anchorRef}
-          aria-label='Button group with a nested menu'
-        >
-          <Button
-            sx={{
-              width: '100%',
-              fontSize: '1.2rem',
-              '@media (max-width: 600px)': {
-                fontSize: '0.8rem'
-              }
-            }}
-          >
-            {options[selectedIndex]}
-          </Button>
-          <Button
-            sx={{ width: '5%' }}
-            size='large'
-            aria-controls={open ? 'split-button-menu' : undefined}
-            aria-expanded={open ? 'true' : undefined}
-            aria-label='select merge strategy'
-            aria-haspopup='menu'
-            onClick={handleToggle}
-          >
-            <ArrowDropDownIcon />
-          </Button>
-        </ButtonGroup>
-
-        <Popper
+      <Loading open={isLoading} tmp={chatRoom} />
+      <HeaderWrapper>
+        <Select
+          value={options[selectedIndex]}
+          onChange={handleSelectChange}
           sx={{
-            zIndex: 1
+            minWidth: 200,
+            fontSize: '1rem',
+            marginRight: '10px'
           }}
-          open={open}
-          anchorEl={anchorRef.current}
-          role={undefined}
-          transition
-          disablePortal
         >
-          {({ TransitionProps, placement }) => (
-            <Grow
-              {...TransitionProps}
-              style={{
-                transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom'
-              }}
-            >
-              <Paper>
-                <ClickAwayListener onClickAway={handleClose}>
-                  <MenuList id='split-button-menu' autoFocusItem>
-                    {options.map((option, index) => (
-                      <MenuItem
-                        key={option}
-                        selected={index === selectedIndex}
-                        onClick={event => handleMenuItemClick(event, index)}
-                      >
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </ClickAwayListener>
-              </Paper>
-            </Grow>
-          )}
-        </Popper>
-      </Wrapper>
-      <div style={{ height: '78dvh', overflowY: 'scroll' }}>
+          {options.map((option, index) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
+        <IconButton
+          sx={{
+            backgroundColor: 'var(--main-common)',
+            '&:hover': {
+              backgroundColor: 'var(--main-deep)'
+            },
+            marginRight: '30px'
+          }}
+          onClick={() => navigate('/chat/new')}
+        >
+          <AddIcon sx={{ color: '#fff' }} />
+        </IconButton>
+      </HeaderWrapper>
+      <div style={{ height: '78dvh' }}>
         {error && <Notice>{error}</Notice>}
-        {isLoading && <Notice>로딩 중 입니다..</Notice>}
         {data &&
           data.map(e => <ChatRoomDetail key={e.id} data={e} selectedIndex={selectedIndex} />)}
       </div>
@@ -200,11 +157,12 @@ function ChatListPage() {
   );
 }
 
-const Wrapper = styled.div`
+const HeaderWrapper = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: flex-end;
+  align-items: center;
   width: 95%;
-  margin: 10px auto 0;
+  margin: 10px auto;
 `;
 
 const Notice = styled.div`

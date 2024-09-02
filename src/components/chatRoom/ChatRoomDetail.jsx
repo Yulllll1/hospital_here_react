@@ -11,9 +11,14 @@ function ChatRoomDetail({ data, selectedIndex }) {
   const [auth] = useRecoilState(userauthState);
 
   const [isHovered, setIsHovered] = useState(false);
+  const [isImageHovered, setIsImageHovered] = useState(false);
 
   const handleWrapperClick = () => {
     if (auth.role === 'ADMIN' && data.type.type !== '서비스센터 상담' && selectedIndex === 2) {
+      return;
+    }
+
+    if (isImageHovered) {
       return;
     }
 
@@ -23,7 +28,10 @@ function ChatRoomDetail({ data, selectedIndex }) {
   return (
     <Container hovered={isHovered ? true : undefined}>
       <Wrapper
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => {
+          setIsHovered(true);
+          setIsImageHovered(false);
+        }}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleWrapperClick}
         selectedIndex={selectedIndex}
@@ -80,7 +88,11 @@ function ChatRoomDetail({ data, selectedIndex }) {
               </PreviewText>
             </>
           ) : (
-            <div style={{ display: 'flex' }}>
+            <div
+              style={{ display: 'flex' }}
+              onMouseEnter={() => setIsImageHovered(true)}
+              onMouseLeave={() => setIsImageHovered(false)}
+            >
               <ProfileImage user={data.user1} size={'3rem'} doctorProfile={data.doctorProfile} />
               {data.user2 ? (
                 <ProfileImage user={data.user2} size={'3rem'} doctorProfile={data.doctorProfile} />
@@ -112,13 +124,13 @@ const Container = styled.div`
   align-items: center;
   max-width: 60dvh;
   width: 80%;
-  height: 18dvh;
-  border: 2px solid black;
+  height: 15dvh;
+  border: 2px solid var(--paper-deep);
   border-radius: 10px;
   margin: 20px auto 0px;
   padding: 5px 30px;
   &:hover {
-    background-color: ${({ hovered }) => (hovered === true ? '#c8c1c1' : 'white')};
+    background-color: ${({ hovered }) => (hovered === true ? 'var(--paper-common)' : 'white')};
     cursor: ${({ hovered }) => (hovered === true ? 'pointer' : null)};
   }
 `;
@@ -180,6 +192,7 @@ const Preview = styled.div`
 const PreviewText = styled.p`
   overflow: hidden;
   white-space: nowrap;
+  color: grey;
   width: 100%;
 `;
 

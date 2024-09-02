@@ -6,6 +6,7 @@ import { useRecoilState } from 'recoil';
 import { chatRoomState, userauthState } from '../../utils/atom';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { Btn } from '../../components/global/CustomComponents';
 
 function InsertMessage() {
   const params = useParams();
@@ -41,24 +42,22 @@ function InsertMessage() {
           <InsertMessageInfo room={room} />
         </p>
         {auth.role !== 'DOCTOR' && !room?.status?.status && (
-          <Button
+          <Btn
             type='DOCTOR'
-            variant='contained'
-            style={{ marginBottom: '4px' }}
+            style={{ width: '100%', marginBottom: 10 }}
             onClick={handleButtonClick}
           >
             증상 간편 상담 (의사)
-          </Button>
+          </Btn>
         )}
         {auth.role !== 'ADMIN' && !room?.status?.status && (
-          <Button
+          <Btn
             type='SERVICE'
-            variant='contained'
-            style={{ marginBottom: '4px' }}
+            style={{ width: '100%', marginBottom: 10 }}
             onClick={handleButtonClick}
           >
             고객 센터
-          </Button>
+          </Btn>
         )}
       </Wrapper>
     </Container>
@@ -81,7 +80,7 @@ const InsertMessageInfo = ({ room }) => {
       <br />
       상담을 위해 {type === '의사 상담' ? '증상이나 병력에 대해 ' : '필요한 정보를 '}
       미리 정리해주시면 <br />
-      상담이 더 원할하게 진행될 수 있습니다
+      상담이 더 원활하게 진행될 수 있습니다
     </InfoContainer>
   );
 };
@@ -94,9 +93,9 @@ const Container = styled.div`
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  border: 2px solid black;
+  border: 2px solid #E2E2E2;
   margin-top: 2px;
-  padding: 2px;
+  padding: 10px;
   width: 70%;
   border-radius: 10px;
   order: 2;

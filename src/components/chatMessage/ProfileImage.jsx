@@ -64,7 +64,7 @@ const Image = styled.div`
   width: ${({ size }) => size};
   height: ${({ size }) => size};
   border-radius: 50%;
-  border: 1px solid black;
+  border: 1.5px solid lightgrey;
   background-repeat: no-repeat;
   background-size: contain;
   margin-right: ${({ self }) => (!self ? '10px' : '0px')};
@@ -77,7 +77,7 @@ const Image = styled.div`
         : `url(${profileDefaultImage})`};
   &:hover {
     cursor: ${({ user }) => (user ? 'pointer' : null)};
-    border: ${({ user }) => (user ? '3px solid red' : null)};
+    border: ${({ user }) => (user ? '2px solid lightgrey' : null)};
   }
 `;
 

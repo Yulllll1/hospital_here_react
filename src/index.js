@@ -44,6 +44,8 @@ import ShowEmail from './components/ShowEmail';
 
 import ReservationSuccess from './pages/Hospital/ReservationSuccess'
 import ReservationList from './pages/user/ReservationList';
+import { MyPosts } from './pages/user/MyPosts.jsx';
+import UserInfoPage from './pages/user/UserInfoPage';
 
 
 const queryClient = new QueryClient();
@@ -63,12 +65,6 @@ const router = createBrowserRouter([
     element: <SocialLoginSuccess />
   },
 
-  { path: 'hospitals', element: <HospitalList /> },
-  { path: 'hospitals/maps', element: <MapComponent /> },
-  { path: 'hospitals/list', element: <HospitalResult />},
-
-
-  { path: 'hospitals/maps/:hospitalid/reservation', element: <HospitalReservation /> },
   {
     path: '/email-verified',
     element: <RequestEmailVerification />
@@ -85,6 +81,10 @@ const router = createBrowserRouter([
   {
     path: '/reservations',
     element: <ReservationList />
+  },
+  {
+    path: 'my-posts',
+    element: <MyPosts />
   },
   // 로그인 필요없는 페이지 - 끝
   {
@@ -110,8 +110,19 @@ const router = createBrowserRouter([
           { path: 'chat/new', element: <NewChatPage /> },
           { path: 'chatlist', element: <ChatListPage /> },
 
-
           //hospitalpage
+          { path: 'hospitals', element: <HospitalList /> },
+          { path: 'hospitals/maps', element: <MapComponent /> },
+          { path: 'hospitals/list', element: <HospitalResult />},
+          { path: 'hospitals/maps/:hospitalid/reservation', element: <HospitalReservation /> },
+
+          { path: 'hospitals', element: <HospitalList /> },
+          { path: 'hospitals/maps', element: <MapComponent /> },
+          { path: 'hospitals/list', element: <HospitalResult />},
+
+
+          { path: 'hospitals/maps/:hospitalid/reservation', element: <HospitalReservation /> },
+          { path: 'hospitals/maps/:hospitalid/reservation/success', element: <ReservationSuccess /> },
 
           {
             path: 'admin-page',
@@ -137,12 +148,6 @@ const router = createBrowserRouter([
             path: 'my-page',
             element: <MyPage />
           },
-
-
-
-
-
-
           {
             path: 'my-reviews', // 새로운 경로 추가
             element: <MyReviews />
@@ -154,6 +159,10 @@ const router = createBrowserRouter([
           {
             path: 'my-activity',
             element: <MyActivity />
+          },
+          {
+            path: '/user-info',
+            element: <UserInfoPage />
           },
 
 

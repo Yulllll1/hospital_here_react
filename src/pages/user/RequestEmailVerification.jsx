@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { TextField, Button, Typography, Paper } from '@mui/material';
+import { Typography, Container, Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../../utils/axios';
 import MainContainer from "../../components/global/MainContainer";
+import { TextF, Btntwo } from '../../components/global/CustomComponents';
 
 const RequestEmailVerification = () => {
   const [state, setState] = useState({
@@ -51,43 +52,84 @@ const RequestEmailVerification = () => {
 
   return (
     <MainContainer>
-      <Paper elevation={6} sx={{ padding: 3, borderRadius: '10px', maxWidth: '500px', margin: 'auto' }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          이메일 인증 및 비밀번호 재설정
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="이메일"
-            name="email"
-            type="email"
-            value={state.email}
-            onChange={handleInputChange}
-            fullWidth
-            required
-            margin="normal"
-            disabled={state.codeSent}
-          />
-          {state.codeSent && (
-            <TextField
-              label="인증 코드"
-              name="verificationCode"
-              type="text"
-              value={state.verificationCode}
+      <Container
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80dvh',
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 500,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 2,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 5 }}>
+            이메일 인증 및 비밀번호 재설정
+          </Typography>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+            <TextF
+              label="이메일"
+              name="email"
+              type="email"
+              value={state.email}
               onChange={handleInputChange}
               fullWidth
               required
               margin="normal"
+              disabled={state.codeSent}
+              sx={{
+                '& .MuiInputBase-root': {
+                  width: '100%',
+                }
+              }}
             />
+            {state.codeSent && (
+              <TextF
+                label="인증 코드"
+                name="verificationCode"
+                type="text"
+                value={state.verificationCode}
+                onChange={handleInputChange}
+                fullWidth
+                required
+                margin="normal"
+
+              />
+            )}
+            <Btntwo type="submit" sx={{ width: '100%', marginTop: 2 }}>
+              {state.codeSent ? '비밀번호 재설정' : '인증 코드 요청'}
+            </Btntwo>
+          </form>
+          {state.message && (
+            <Typography
+              color={state.codeSent ? 'success' : 'error'}
+              align="center"
+              sx={{ marginTop: '10px' }}
+            >
+              {state.message}
+            </Typography>
           )}
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ borderRadius: '10px', padding: '10px 0' }}>
-            {state.codeSent ? '비밀번호 재설정' : '인증 코드 요청'}
+          <Button
+            onClick={() => navigate('/login')}
+            fullWidth
+            sx={{ marginTop: '15px', color: 'green',
+              '&:hover': {
+                color: '#66bb6a',
+              },
+            }}
+          >
+            로그인 화면으로 돌아가기
           </Button>
-        </form>
-        {state.message && <Typography color={state.codeSent ? "success" : "error"} align="center" sx={{ marginTop: '10px' }}>{state.message}</Typography>}
-        <Button onClick={() => navigate('/login')} fullWidth sx={{ marginTop: '15px' }}>
-          로그인 화면으로 돌아가기
-        </Button>
-      </Paper>
+        </Box>
+      </Container>
     </MainContainer>
   );
 };

@@ -1,8 +1,7 @@
 import { Button } from '@mui/material';
 import React from 'react';
-import { axiosInstance } from '../../../../utils/axios';
 import { useRecoilState } from 'recoil';
-import { chatRoomState, stompState } from '../../../../utils/atom';
+import { stompState } from '../../../../utils/atom';
 
 function RemoveMessage({ msgId }) {
   const [stomp] = useRecoilState(stompState);
@@ -20,7 +19,15 @@ function RemoveMessage({ msgId }) {
 
   return (
     <>
-      <Button onClick={handleClick}>메시지 삭제</Button>
+      <Button
+        onClick={handleClick}
+        sx={{
+          color: 'var(--main-deep)',
+          fontWeight: 'bold'
+        }}
+      >
+        메시지 삭제
+      </Button>
     </>
   );
 }

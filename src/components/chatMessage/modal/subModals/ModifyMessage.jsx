@@ -57,7 +57,15 @@ function ModifyMessage({ msgId, msg, setOpens }) {
 
   return (
     <>
-      <Button onClick={handleClick}>메시지 수정</Button>
+      <Button
+        onClick={handleClick}
+        sx={{
+          color: 'var(--main-deep)',
+          fontWeight: 'bold'
+        }}
+      >
+        메시지 수정
+      </Button>
       <Modal
         open={open}
         onClose={handleClose}
@@ -70,11 +78,22 @@ function ModifyMessage({ msgId, msg, setOpens }) {
               required
               id='outlined-required'
               label='Required'
-              defaultValue={msg}
+              defaultValue={msg.replace(/\\n/g, ' ')}
               onChange={e => setMessage(e.target.value)}
             />
           </div>
-          <Button variant='contained' sx={{ marginTop: '15px' }} onClick={handleModifyClick}>
+          <Button
+            variant='contained'
+            sx={{
+              marginTop: '15px',
+              backgroundColor: 'var(--main-common)',
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: 'var(--main-deep)'
+              }
+            }}
+            onClick={handleModifyClick}
+          >
             수정하기
           </Button>
         </Box>

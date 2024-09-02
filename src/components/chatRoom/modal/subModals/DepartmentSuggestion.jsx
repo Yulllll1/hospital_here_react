@@ -1,6 +1,9 @@
 import { Autocomplete, Box, Button, createFilterOptions, Modal, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '../../../../utils/axios';
+import { useRecoilValue } from 'recoil';
+import { stompState } from '../../../../utils/atom';
+import { Btn } from '../../../../components/global/CustomComponents';
 
 const style = {
   position: 'absolute',
@@ -16,16 +19,17 @@ const style = {
   pb: 3
 };
 
-
 const filterOptions = createFilterOptions({
   matchFrom: 'start',
   stringify: option => option.title
 });
 
-function DepartmentSuggestion({ sendMessage, setOpens }) {
+function DepartmentSuggestion({ setOpens, text, defaultValue, msgId }) {
   const [value, setValue] = useState(null);
   const [open, setOpen] = useState(false);
   const [departments, setDepartments] = useState([]);
+
+  const stomp = useRecoilValue(stompState);
 
   const handleButtonClick = () => {
     const isConfirmed = window.confirm('해당 진료과로 제공하시겠습니까?');
@@ -36,7 +40,7 @@ function DepartmentSuggestion({ sendMessage, setOpens }) {
       return;
     }
 
-    sendMessage(null, `dpt: ${value}`);
+    stomp.sendMessage(defaultValue ? msgId : null, `dpt: ${value}`);
     setOpen(false);
     setOpens(false);
   };
@@ -64,7 +68,15 @@ function DepartmentSuggestion({ sendMessage, setOpens }) {
 
   return (
     <>
-      <Button onClick={handleOpen}>진료과목 정보 제공하기</Button>
+      <Button
+        onClick={handleOpen}
+        sx={{
+          fontWeight: 'bold',
+          color: 'var(--main-deep)'
+        }}
+      >
+        {text || '진료과목 정보 제공하기'}
+      </Button>
       <Modal
         open={open}
         onClose={handleClose}
@@ -77,13 +89,12 @@ function DepartmentSuggestion({ sendMessage, setOpens }) {
             options={departments}
             getOptionLabel={option => option.name}
             filterOptions={filterOptions}
+            defaultValue={{ name: defaultValue }}
             sx={{ width: 300, marginBottom: '10px' }}
             renderInput={params => <TextField {...params} />}
             onChange={e => setValue(e.target.innerText)}
           />
-          <Button variant='contained' onClick={handleButtonClick}>
-            정보 제공하기
-          </Button>
+          <Btn onClick={handleButtonClick}>정보 제공하기</Btn>
         </Box>
       </Modal>
     </>

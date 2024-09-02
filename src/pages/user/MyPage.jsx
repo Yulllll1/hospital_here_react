@@ -1,24 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Typography, TextField, Button, Box, Avatar, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import {
+  Typography,
+  Avatar,
+  Box,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  IconButton, Button, ListItemIcon
+} from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { chatRoomState, userauthState } from '../../utils/atom';
 import { axiosInstance } from '../../utils/axios';
-import MainContainer from "../../components/global/MainContainer";
 import { deleteCookie } from '../../utils/cookies';
-import { userauthState } from '../../utils/atom';
-import { useSetRecoilState, useRecoilValue } from 'recoil';
-import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
-import PostCodeModal from '../../components/PostCodeModal';
+import MainContainer from "../../components/global/MainContainer";
 import ProfileImageUpload from './ProfileImageUpload';
+import { useNavigate } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import ChatIcon from '@mui/icons-material/Chat';
+import ArticleIcon from '@mui/icons-material/Article';
+import { Btn, Btntwo } from '../../components/global/CustomComponents';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ChatBubbleIcon from '@mui/icons-material/ChatBubble';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import NoteIcon from '@mui/icons-material/Note';
+import StarIcon from '@mui/icons-material/Star';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 
 const theme = createTheme({
   palette: {
     black: {
-      main: '#2E2F2F',
-      light: '#6E6E6E',
-      drak: '#151515',
+      main: 'var(--main-common)',
+      light: 'var(--paper-common)',
+      drak: 'var(--main-deep)',
       contrastText: '#E7E7E6',
     },
   },
@@ -27,13 +49,42 @@ const theme = createTheme({
 const MyPage = () => {
   const [state, setState] = useState({
     userInfo: null,
-    editField: null,
-    formData: {},
-    dialogOpen: false,
-    postcodeOpen: false,
-    addressData: { address: '', addressDetail: '' },
     imageUploadOpen: false,
   });
+
+  const navigate = useNavigate();
+  const setAuthState = useSetRecoilState(userauthState);
+  const auth = useRecoilValue(userauthState);
+  const setChatRoom = useSetRecoilState(chatRoomState);
+
+  useEffect(() => {
+    if (!auth.isLoggedIn) {
+      navigate('/login');
+    }
+  }, [auth, navigate]);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axiosInstance.get('/users/my-page', {
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+        setState((prevState) => ({
+          ...prevState,
+          userInfo: response.data,
+        }));
+      } catch (error) {
+        console.error(error);
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [navigate]);
+
   const handleAvatarClick = () => {
     setState((prevState) => ({
       ...prevState,
@@ -59,255 +110,162 @@ const MyPage = () => {
     }));
   };
 
-
-
-  const navigate = useNavigate();
-  const setAuthState = useSetRecoilState(userauthState);
-  const auth = useRecoilValue(userauthState);
-
-  useEffect(() => {
-    if (!auth.isLoggedIn) {
-      navigate('/login');
-    }
-  }, [auth, navigate]);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axiosInstance.get('/users/my-page', {
-          headers: {
-            Authorization: `${token}`
-          }
-        });
-        setState((prevState) => ({
-          ...prevState,
-          userInfo: response.data,
-          formData: response.data,
-        }));
-      } catch (error) {
-        console.error(error);
-        navigate('/login');
-      }
-    };
-
-    fetchUserInfo();
-  }, [navigate]);
-
-  const handleEditClick = (field) => {
-    setState((prevState) => ({
-      ...prevState,
-      editField: field,
-      dialogOpen: true,
-      addressData: field === 'address' ? { address: prevState.formData.address, addressDetail: prevState.formData.addressDetail } : prevState.addressData,
-    }));
-  };
-
-  const handleSaveClick = async (field) => {
-    try {
-      let dataToSend = { [field]: state.formData[field] };
-      let endpoint = `/users/my-page/${field}`;
-
-      if (field === 'address') {
-        dataToSend = state.addressData;
-        endpoint = '/users/my-page/address';
-      } else if (field === 'phoneNumber') {
-        endpoint = '/users/my-page/phoneNumber';
-      } else if (field === 'password') {
-        dataToSend = {
-          verifyPassword: state.formData.verifyPassword,
-          alterPassword: state.formData.alterPassword,
-        };
-        endpoint = '/users/my-page/password';
-      }
-
-      await axiosInstance.put(endpoint, dataToSend);
-      setState((prevState) => ({
-        ...prevState,
-        userInfo: {
-          ...prevState.userInfo,
-          ...dataToSend
-        },
-        editField: null,
-        dialogOpen: false,
-      }));
-      window.location.reload();  // 새로고침
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        alert('기존 비밀번호가 올바르지 않습니다.');
-      } else {
-        console.error(error);
-      }
-    }
-  };
-
-  const handleCancelClick = () => {
-    setState((prevState) => ({
-      ...prevState,
-      formData: { ...prevState.userInfo },
-      editField: null,
-      dialogOpen: false,
-      postcodeOpen: false,
-    }));
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setState((prevState) => ({
-      ...prevState,
-      formData: {
-        ...prevState.formData,
-        [name]: value,
-      },
-    }));
-  };
-
-  const handleDialogInputChange = (e) => {
-    const { name, value } = e.target;
-    setState((prevState) => ({
-      ...prevState,
-      addressData: {
-        ...prevState.addressData,
-        [name]: value,
-      },
-    }));
-  };
-
-  const handleAddressComplete = (fullAddress) => {
-    setState((prevState) => ({
-      ...prevState,
-      addressData: {
-        ...prevState.addressData,
-        address: fullAddress
-      },
-    }));
-  };
-
   const handleLogoutClick = () => {
     setAuthState({ isLoggedIn: false });
     localStorage.removeItem('token');
     deleteCookie('refreshToken');
+    setChatRoom((c) => ({ rooms: {}, selectedIndex: 0 }));
     navigate('/');
   };
 
-  const handleMyActivity = () => {
-    navigate('/my-activity');
-  }
+  const handleClick = (path) => {
+    navigate(path);
+  };
 
+  const handleChatClick = () => {
+    navigate('/chat/new');
+  };
+
+  const handleBoardClick = () => {
+    navigate('/boards/4');
+  };
   const OnClickAdminPage = () => {
     navigate('/admin-page');
   }
 
-  const { userInfo, editField, formData, dialogOpen, postcodeOpen, addressData, imageUploadOpen } = state;
-
+  const { userInfo, imageUploadOpen } = state;
+  const userRole = localStorage.getItem('userRole');
 
   return (
     <MainContainer>
-      <Paper elevation={6} sx={{ margin: '10px', padding: 3, borderRadius: '10px' }}>
-        <ThemeProvider theme={theme}>
-          <Typography variant='h5' sx={{ display: 'inline', color: '#6E6E6E' }}>
+
+      <Paper elevation={0} sx={{ margin: '10px', padding: 3, borderRadius: '10px', minHeight: '-webkit-fill-available', height: 'fit-content'}}>
+
+          <Typography variant='h5' sx={{fontWeight: 'bold', display: 'inline', color: 'var(--main-common)' }}>
             마이페이지
           </Typography>
-          <Button variant="contained" color="black" sx={{ float: 'right' }} onClick={handleMyActivity}>
-            나의 활동내역
-          </Button>
-          <Box sx={{ margin: '20px 0', borderBottom: '1px solid grey' }}></Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-            <Avatar
-              sx={{ width: '40px', height: '40px', marginRight: '10px', cursor: 'pointer' }}
-              onClick={handleAvatarClick}
-              src={userInfo?.image}
-            >
-              {userInfo && !userInfo.img ? userInfo.name[0] : ''}
-            </Avatar>
-            <Typography variant="body1" sx={{ flexGrow: 1 }}>
-              {userInfo ? userInfo.role : '일반 회원'}
-            </Typography>
+          <Box sx={{ margin: '20px 0', borderBottom: '1px solid black' }}></Box>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '20px',
+              marginLeft: '30px',
+              marginRight: '30px',
+              position: 'relative',
+            }}
+          >
+            <Box sx={{ textAlign: 'left' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'var(--main-common)' }}>
+                {userInfo?.name} 님
+              </Typography>
+              <Typography variant="body1">
+                {userRole === 'USER' ? '일반 회원' : userRole === 'DOCTOR' ? '의사 회원' : '관리자 회원'}
+              </Typography>
+            </Box>
+            <Box sx={{ position: 'relative' }}>
+              <Avatar
+                sx={{ width: 100, height: 100, cursor: 'pointer', bgcolor: 'white', border: '2px solid #e2e2e2' }}
+                onClick={handleAvatarClick}
+                src={userInfo?.image}
+              >
+                {userInfo && !userInfo.img ? userInfo.name[0] : ''}
+              </Avatar>
+              <IconButton
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  backgroundColor: 'var(--main-common)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'var(--main-deep)',
+                  },
+                }}
+                onClick={handleAvatarClick}
+              >
+                <EditIcon />
+              </IconButton>
+            </Box>
           </Box>
-          <form>
-            {['name', 'birthday', 'email'].map((field) => (
-              <Box key={field} sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <TextField
-                  label={getFieldLabel(field)}
-                  name={field}
-                  type='text'
-                  value={formData[field] || ''}
-                  fullWidth
-                  margin="normal"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-              </Box>
-            ))}
-            {['address', 'phoneNumber'].map((field) => (
-              <Box key={field} sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <TextField
-                  label={getFieldLabel(field)}
-                  name={field}
-                  type='text'
-                  value={field === 'address' ? `${formData.address || ''} ${formData.addressDetail || ''}` : formData[field] || ''}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="normal"
-                  InputProps={{
-                    readOnly: editField !== field,
-                  }}
-                />
-                {editField === field ? (
-                  <>
-                    <IconButton onClick={() => handleSaveClick(field)}>
-                      <SaveIcon />
-                    </IconButton>
-                    <IconButton onClick={handleCancelClick}>
-                      <CancelIcon />
-                    </IconButton>
-                  </>
-                ) : (
-                  <IconButton onClick={() => handleEditClick(field)}>
-                    <EditIcon />
-                  </IconButton>
-                )}
-              </Box>
-            ))}
-            {!userInfo?.provider && (
-              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <TextField
-                  label="비밀번호"
-                  name="password"
-                  type="password"
-                  value={formData.password || ''}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="normal"
-                  InputProps={{
-                    readOnly: editField !== 'password',
-                  }}
-                />
-                {editField === 'password' ? (
-                  <>
-                    <IconButton onClick={() => handleEditClick('password')}>
-                      <EditIcon />
-                    </IconButton>
-                  </>
-                ) : (
-                  <IconButton onClick={() => handleEditClick('password')}>
-                    <EditIcon />
-                  </IconButton>
-                )}
-              </Box>
-            )}
-          </form>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px', marginBottom: '10px' }}>
-            <Button variant="contained" color="black" onClick={handleLogoutClick}>
-              로그아웃
-            </Button>
-            <Button variant="contained" color="error">
-              회원 탈퇴
-            </Button>
+          <Divider flexItem />
+
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', margin: '20px 0', gap: 2 }}>
+            <Box sx={{ textAlign: 'center', marginLeft: 4 }}>
+              <IconButton
+                sx={{
+                  backgroundColor: 'var(--paper-soft)',
+                  color: 'black',
+                  width: 80,
+                  height: 80,
+                }}
+                onClick={handleChatClick}
+              >
+                <ChatIcon sx={{ fontSize: 40 }} />
+              </IconButton>
+              <Typography variant="caption" sx={{ display: 'block', marginTop: 1 }}>
+                새로운 상담
+              </Typography>
+            </Box>
+            <Divider orientation="vertical" flexItem />
+            <Box sx={{ textAlign: 'center', marginRight: 4 }}>
+              <IconButton
+                sx={{
+                  backgroundColor: 'var(--paper-soft)',
+                  color: 'black',
+                  width: 80,
+                  height: 80,
+                }}
+                onClick={handleBoardClick}
+              >
+                <ArticleIcon sx={{ fontSize: 40 }} />
+              </IconButton>
+              <Typography variant="caption" sx={{ display: 'block', color: 'black', marginTop: 1 }}>
+                공지사항
+              </Typography>
+            </Box>
           </Box>
-          <Button variant="contained" color="black" onClick={OnClickAdminPage}>관리자 페이지</Button>
-        </ThemeProvider>
+          <Divider flexItem />
+
+          <List component="nav" aria-label="activity history">
+            {[
+              { label: '내 정보 수정', path: '/user-info', icon: <AccountCircleIcon /> },
+              { label: '내 채팅 내역', path: '/chatlist', icon: <ChatBubbleIcon /> },
+              { label: '예약 내역', path: '/reservations', icon: <ScheduleIcon /> },
+              { label: '내가 쓴 글', path: '/my-posts', icon: <NoteIcon /> },
+              { label: '나의 리뷰', path: '/my-reviews', icon: <ThumbUpIcon /> },
+              { label: '즐겨찾기', path: '/bookmarks', icon: <StarIcon /> },
+            ].map((item) => (
+              <React.Fragment key={item.label}>
+                <ListItem
+                  button
+                  onClick={() => handleClick(item.path)}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0px',
+                  }}
+                >
+                  <ListItemIcon>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.label} />
+                  <ChevronRightIcon sx={{ color: 'black' }} />
+                </ListItem>
+                <Divider />
+              </React.Fragment>
+            ))}
+          </List>
+
+
+        {userRole === 'ADMIN' && (
+          <Btn onClick={OnClickAdminPage} sx = {{marginTop: 13, marginLeft: 'auto'}}>
+            관리자 페이지
+          </Btn>
+        )}
       </Paper>
       <Dialog open={imageUploadOpen} onClose={handleImageUploadClose}>
         <DialogTitle>프로필 이미지 업로드</DialogTitle>
@@ -315,108 +273,13 @@ const MyPage = () => {
           <ProfileImageUpload userId={userInfo?.id} onImageUpload={handleImageUpload} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleImageUploadClose} color="primary">
+          <Btn onClick={handleImageUploadClose} color="primary">
             취소
-          </Button>
+          </Btn>
         </DialogActions>
       </Dialog>
-      <Dialog open={dialogOpen} onClose={handleCancelClick}>
-        <DialogTitle>{getFieldLabel(editField)}</DialogTitle>
-        <DialogContent>
-          {editField === 'address' ? (
-            <>
-              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                <TextField
-                  label="주소"
-                  name="address"
-                  value={addressData.address}
-                  onChange={handleDialogInputChange}
-                  fullWidth
-                  margin="normal"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-                <Button variant="contained" onClick={() => setState((prevState) => ({ ...prevState, postcodeOpen: true }))} sx={{ height: '40px', marginLeft: '10px' }}>
-                  주소 검색
-                </Button>
-              </Box>
-              <TextField
-                label="상세주소"
-                name="addressDetail"
-                value={addressData.addressDetail}
-                onChange={handleDialogInputChange}
-                fullWidth
-                margin="normal"
-              />
-            </>
-          ) : editField === 'password' ? (
-            <>
-              <TextField
-                label="기존 비밀번호"
-                name="verifyPassword"
-                type="password"
-                value={formData.verifyPassword || ''}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                label="변경할 비밀번호"
-                name="alterPassword"
-                type="password"
-                value={formData.alterPassword || ''}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-              />
-            </>
-          ) : (
-            <TextField
-              label={getFieldLabel(editField)}
-              name={editField}
-              type='text'
-              value={formData[editField] || ''}
-              onChange={handleInputChange}
-              fullWidth
-              margin="normal"
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelClick} color="primary">
-            취소
-          </Button>
-          <Button onClick={() => handleSaveClick(editField)} color="primary">
-            저장
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <PostCodeModal open={postcodeOpen} onClose={() => setState((prevState) => ({ ...prevState, postcodeOpen: false }))} onComplete={handleAddressComplete} />
     </MainContainer>
   );
-};
-
-const getFieldLabel = (field) => {
-  switch (field) {
-    case 'name':
-      return '이름';
-    case 'email':
-      return '이메일 주소';
-    case 'password':
-      return '비밀번호';
-    case 'birthday':
-      return '생년월일';
-    case 'address':
-      return '주소';
-    case 'addressDetail':
-      return '상세주소';
-    case 'phoneNumber':
-      return '전화번호';
-    default:
-      return '';
-  }
 };
 
 export default MyPage;

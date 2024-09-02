@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { List, ListItem, ListItemText, Paper, Typography, Box, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
+import {
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  IconButton,
+  Divider
+} from '@mui/material';
 import { Star, StarBorder } from '@mui/icons-material';
 import { axiosInstance } from '../../utils/axios';
 import MainContainer from '../../components/global/MainContainer';
@@ -18,8 +34,25 @@ const ReservationList = () => {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const response = await axiosInstance.get('/api/reservations/user');
-        setReservations(response.data);
+        const response = await axiosInstance.get('/api/reservations/user', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const reservationData = response.data;
+
+
+        const reservationsWithHospitalNames = await Promise.all(
+          reservationData.map(async (reservation) => {
+            const hospitalResponse = await axiosInstance.get(`/api/hospitals/${reservation.hospitalid}`);
+            return {
+              ...reservation,
+              hospitalName: hospitalResponse.data.name
+            };
+          })
+        );
+
+        setReservations(reservationsWithHospitalNames);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -74,6 +107,8 @@ const ReservationList = () => {
       };
       await axiosInstance.post(`/review/${selectedReservation.hospitalid}`, reviewData);
       alert('리뷰가 성공적으로 작성되었습니다.');
+      await axiosInstance.delete(`/api/reservations/${selectedReservation.id}`);
+      window.location.reload();
       setReviewDialogOpen(false);
     } catch (error) {
       console.error(error);
@@ -122,58 +157,105 @@ const ReservationList = () => {
     return [...filledStars, ...emptyStars];
   };
 
+  const formatTime = (timeString) => {
+    const date = new Date(`1970-01-01T${timeString}Z`);
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   return (
     <MainContainer>
-      <Paper elevation={6} sx={{ margin: '10px', padding: 3, borderRadius: '10px' }}>
-        <Typography variant='h5' sx={{ display: 'inline', color: '#6E6E6E' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          margin: '10px',
+          padding: 3,
+          borderRadius: '10px',
+          minHeight: '-webkit-fill-available',
+          height: 'fit-content'
+        }}
+      >
+        <Typography variant='h5' sx={{fontWeight: 'bold', display: 'inline', color: 'var(--main-common)' }}>
           예약 내역
         </Typography>
-        <Box sx={{ margin: '20px 0', borderBottom: '1px solid grey' }}></Box>
+        <Box sx={{ margin: '20px 0', borderBottom: '1px solid var(--main-common)' }}></Box>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
             <CircularProgress />
           </Box>
         ) : (
-          <List component="nav">
+          <List component="nav" sx={{paddingTop: '0px',}}>
             {reservations.length === 0 ? (
-              <Typography variant="body1">예약 내역이 없습니다.</Typography>
+              <Typography variant="body1" sx={{ color: 'var(--main-common)', textAlign: 'center', marginTop: 3 }}>예약 내역이 없습니다.</Typography>
             ) : (
               reservations.map((reservation) => (
-                <ListItem key={reservation.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <ListItemText
-                    primary={<>{reservation.department} 진료 <br /> 예약일시 : {reservation.date} {reservation.timeSlot}</>}
-                    secondary={`예약자 성함: ${reservation.userName}`}
-                  />
-                  <Box>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => fetchHospitalInfo(reservation.hospitalid)}
-                      sx={{ marginRight: 2 }}
-                    >
-                      정보
-                    </Button>
-                    {canWriteReview(reservation.date, reservation.timeSlot) && (
+                <React.Fragment key={reservation.id}>
+                  <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <ListItemText
+                      primary={<>
+                        <Typography variant="subtitle1"
+                                    sx={{ fontWeight: 'bold' }}>
+                          {reservation.hospitalName}
+                        </Typography>
+                        일자 :  {reservation.date}<br />
+                        시간 :  {formatTime(reservation.timeSlot)}</>}
+                      secondary={`예약자 성함: ${reservation.userName}`}
+                    />
+                    <Box>
                       <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => openReviewDialog(reservation)}
-                        sx={{ marginRight: 2 }}
+                        variant="outlined"
+                        sx={{
+                          borderColor: 'var(--main-common)',
+                          color: 'var(--main-common)',
+                          marginRight: 2,
+                          borderRadius: '20px',
+                          '&:hover': {
+                            backgroundColor: 'var(--paper-deep)',
+                            borderColor: 'var(--main-common)',
+                          }
+                        }}
+                        onClick={() => fetchHospitalInfo(reservation.hospitalid)}
                       >
-                        리뷰 작성
+                        정보
                       </Button>
-                    )}
-                    {!canWriteReview(reservation.date, reservation.timeSlot) && (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => cancelReservation(reservation.id)}
-                      >
-                        취소
-                      </Button>
-                    )}
-                  </Box>
-                </ListItem>
+                      {canWriteReview(reservation.date, reservation.timeSlot) && (
+                        <Button
+                          variant="contained"
+                          sx={{
+                            backgroundColor: 'var(--main-deep)',
+                            color: 'white',
+                            marginRight: 0,
+                            borderRadius: '20px',
+                            '&:hover': {
+                              backgroundColor: 'var(--main-common)',
+                            },
+                          }}
+                          onClick={() => openReviewDialog(reservation)}
+                        >
+                          리뷰 작성
+                        </Button>
+                      )}
+                      {!canWriteReview(reservation.date, reservation.timeSlot) && (
+                        <Button
+                          variant="contained"
+                          sx={{
+                            backgroundColor: 'red',
+                            color: 'white',
+                            borderRadius: '20px',
+                            '&:hover': {
+                              backgroundColor: 'darkred',
+                            },
+                          }}
+                          onClick={() => cancelReservation(reservation.id)}
+                        >
+                          취소
+                        </Button>
+                      )}
+                    </Box>
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
               ))
             )}
           </List>
@@ -188,14 +270,28 @@ const ReservationList = () => {
               <Typography variant="h6">{hospitalInfo.name}</Typography>
               <Box sx={{ margin: '20px 0', borderBottom: '1px solid grey' }}></Box>
               <Typography variant="body1">주소: {hospitalInfo.address}</Typography>
-              <Typography variant="body1">전화번호: {hospitalInfo.telephoneNumber && hospitalInfo.telephoneNumber.length > 2 ? hospitalInfo.telephoneNumber : "제공되지 않음"}</Typography>
+              <Typography variant="body1">
+                전화번호: {hospitalInfo.telephoneNumber && hospitalInfo.telephoneNumber.length > 2 ? (
+                <a href={`tel:${hospitalInfo.telephoneNumber}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                  {hospitalInfo.telephoneNumber}
+                </a>
+              ) : "제공되지 않음"}
+              </Typography>
             </Box>
           ) : (
             <Typography>병원 정보를 불러오는 중입니다...</Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
+          <Button
+            sx={{
+            backgroundColor: '#E9E9E9',
+            color: 'black',
+            borderRadius: '20px',
+            '&:hover': {
+              backgroundColor: '#E2E2E2',
+            },
+          }} onClick={handleCloseDialog} color="primary">
             닫기
           </Button>
         </DialogActions>

@@ -3,6 +3,7 @@ import MainContainer from '../../components/global/MainContainer';
 import { Paper, Button, Box, Typography } from "@mui/material";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from "react-router";
+import { Btntwo } from "../../components/global/CustomComponents";
 
 
 const theme = createTheme({
@@ -28,20 +29,20 @@ const AdminPage = () => {
 
   return(
     <MainContainer>
-      <Paper elevation={6} sx={{margin: '10px', padding: 3, borderRadius: '10px' }}> 
+      <Paper elevation={0} sx={{ margin: '10px', padding: 3, borderRadius: '10px', backgroundColor: 'var(--paper-soft)', minHeight: '-webkit-fill-available', height: 'fit-content'}}>
       <ThemeProvider theme={theme}>
-        <Typography variant='h5' sx={{display: 'inline', color: '#6E6E6E'}}>
+      <Typography variant='h5' sx={{ display: 'inline', color: 'var(--main-common)' }}>
           관리자 페이지
         </Typography>
-        <Box sx={{margin: '40px 0 auto', border: '1px solid grey' }}></Box>
+        <Box sx={{ margin: '20px 0', borderBottom: '1px solid var(--main-common)' }}></Box>
         <Box>
-          <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}}
-            onClick={(e) => {OnClickUserList(chatListLink)}}>채팅 관리</Button>
-          <Box sx={{margin: '15px 0 auto', border: '1px solid grey' }}></Box>
-          <Button variant="contained" color="black" size='large' fullWidth sx={{margin: '15px 0 auto', height: '50px', fontSize: '16px'}} 
+          <Btntwo variant="contained" sx={{width: '100%', height: '50px', fontSize: '16px', borderRadius: '10px'}}
+            onClick={(e) => {OnClickUserList(chatListLink)}}>채팅 관리</Btntwo>
+          <Box sx={{ margin: '20px 0', borderBottom: '1px solid var(--main-common)' }}></Box>
+          <Btntwo variant="contained" sx={{width: '100%', height: '50px', fontSize: '16px', borderRadius: '10px'}}
             onClick={(e) => {OnClickUserList(userListLink)}}>회원 목록
-          </Button>
-          <Box sx={{margin: '15px 0 auto', border: '1px solid grey' }}></Box>
+          </Btntwo>
+          <Box sx={{ margin: '20px 0', borderBottom: '1px solid var(--main-common)' }}></Box>
         </Box>
         </ThemeProvider>               
       </Paper>

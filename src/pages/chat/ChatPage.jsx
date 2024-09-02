@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { axiosInstance } from '../../utils/axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import MainContainer from '../../components/global/MainContainer';
 import Message from '../../components/chatMessage/Message';
 import { Stomp } from '@stomp/stompjs';
@@ -8,33 +8,10 @@ import SockJS from 'sockjs-client';
 import ChatInput from '../../components/chatMessage/ChatInput';
 import { useRecoilState } from 'recoil';
 import { chatRoomState, stompState, userauthState } from '../../utils/atom';
-import { Button, ButtonGroup } from '@mui/material';
 import { Loading } from '../../components/Loading';
 import InsertMessage from '../../components/chatMessage/InsertMessage';
-
-const fetchData = async (id, setMessages, setError) => {
-  try {
-    const response = await axiosInstance.get(`/chat-messages`, {
-      params: {
-        chatRoomId: id
-      }
-    });
-    setMessages(response.data);
-
-    if (response.data.length !== 0) {
-      axiosInstance.post('/chat-messages/status', {
-        id: Number(response.data[response.data.length - 1].id)
-      });
-    }
-  } catch (err) {
-    try {
-      setError(err.response.data.message);
-    } catch (err) {
-      console.log(err);
-      alert('잘못된 접근입니다. 다시 시도해주세요');
-    }
-  }
-};
+import { Btn } from '../../components/global/CustomComponents';
+import { CustomScrollBox } from '../../components/CustomScrollBox';
 
 function ChatPage() {
   const params = useParams();
@@ -72,7 +49,6 @@ function ChatPage() {
       try {
         alert(err.response.data.message);
       } catch (err) {
-        console.log(err);
         alert('잘못된 접근입니다. 다시 시도해주세요');
         navigate('/');
       }
@@ -91,17 +67,45 @@ function ChatPage() {
     stompClient.publish({ destination: `/app/chat/${Number(params.chatRoomId)}`, body });
   };
 
-  useEffect(() => {
+  const fetchData = async () => {
     try {
-      fetchData(params.chatRoomId, setMessages, setError);
-    } catch (err) {
-      alert('잘못된 접근입니다');
-    }
+      const response = await axiosInstance.get(`/chat-messages`, {
+        params: {
+          chatRoomId: Number(params.chatRoomId)
+        },
+        headers: {
+          Authorization: localStorage.getItem('token')
+        }
+      });
 
-    if (chatRoom.rooms[`ch_${params.chatRoomId}`].status.status === '비활성화') {
-      setLoading(false);
-      return;
+      if (typeof response.data !== 'object') {
+        throw new Error();
+      }
+
+      setMessages(response.data);
+
+      if (response.data.length !== 0) {
+        axiosInstance.post('/chat-messages/status', {
+          id: Number(response.data[response.data.length - 1].id)
+        });
+      }
+    } catch (err) {
+      try {
+        setError(err.response.data.message);
+      } catch (err) {
+        alert('잘못된 접근입니다');
+        navigate('/');
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchData();
+
+    // if (chatRoom.rooms[`ch_${params.chatRoomId}`]?.status?.status === '비활성화') {
+    //   setLoading(false);
+    //   return;
+    // }
 
     const socket = new SockJS(`${process.env.REACT_APP_API_BASE_URL}/ws`);
 
@@ -175,7 +179,7 @@ function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (tmp != null) tmp.current.scrollIntoView({ behavior: 'smooth' });
+    tmp?.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
@@ -184,27 +188,34 @@ function ChatPage() {
     }
   }, [stompClient]);
 
+  if (!chatRoom?.rooms[`ch_${params.chatRoomId}`]) {
+    return <Navigate to={'/chatlist'} />;
+  }
+
   return (
     <MainContainer isChat={true} sendMessage={sendMessage}>
       <Loading open={loading} />
-      <ButtonGroup
-        sx={{ width: '100%', marginTop: '10px', boxShadow: 'none' }}
+
+      {/* <ButtonGroup
+        sx={{ width: '100%', `marginTop:` '10px', boxShadow: 'none' }}
         variant='contained'
         aria-label='Button group with a nested menu'
       >
-        <Button
+        <Btntwo
           onClick={() => navigate('/chatlist')}
-          sx={{ width: '95%', fontSize: '1.2rem', backgroundColor: '#4f90de', margin: 'auto' }}
+          sx={{
+            width: '100%',
+          }}
         >
           목록으로 돌아가기
-        </Button>
-      </ButtonGroup>
+        </Btntwo>
+      </ButtonGroup> */}
       <div style={{ height: '1dvh' }} />
-      <div style={{ overflowY: 'scroll', height: '72dvh' }}>
+      <CustomScrollBox style={{ height: '76dvh' }}>
         {error && <div>{error}</div>}
-        {chatRoom.rooms[`ch_${params.chatRoomId}`].status.status === '수락 대기' &&
+        {chatRoom.rooms[`ch_${params.chatRoomId}`]?.status?.status === '수락 대기' &&
           chatRoom.rooms[`ch_${params.chatRoomId}`].user1.id === auth.userId && <InsertMessage />}
-        {messages &&
+        {messages.length !== 0 &&
           messages.map((e, idx) => {
             return e.user.id === Number(auth.userId) ? (
               <Message
@@ -222,37 +233,37 @@ function ChatPage() {
               />
             );
           })}
-        {chatRoom.rooms[`ch_${params.chatRoomId}`].status.status === '수락 대기' && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              height: '20dvh',
-              margin: 'auto'
-            }}
-          >
-            {chatRoom.rooms[`ch_${params.chatRoomId}`].user1.id !== auth.userId && (
-              <Button
-                variant='contained'
-                style={{ width: '50%', marginBottom: '4px' }}
+        {chatRoom.rooms[`ch_${params.chatRoomId}`]?.status?.status === '수락 대기' &&
+          chatRoom.rooms[`ch_${params.chatRoomId}`].user1.id !== auth.userId && (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}
+            >
+              <Btn
+                style={{
+                  width: '50%',
+                  fontWeight: 'bold',
+                  backgroundColor: 'var(--paper-common)'
+                }}
                 onClick={acceptChatRoom}
               >
                 채팅 수락
-              </Button>
-            )}
-          </div>
-        )}
-        <div ref={tmp} style={{ height: '5dvh' }} />
+              </Btn>
+            </div>
+          )}
+        <div ref={tmp} style={{ height: '0.1dvh' }} />
         <ChatInput
           sendMessage={sendMessage}
           enable={
-            (chatRoom.rooms[`ch_${params.chatRoomId}`].user1.id === auth.userId ||
+            (chatRoom.rooms[`ch_${params.chatRoomId}`]?.user1.id === auth.userId ||
               chatRoom.rooms[`ch_${params.chatRoomId}`]?.user2?.id === auth.userId) &&
-            chatRoom.rooms[`ch_${params.chatRoomId}`].status.status !== '비활성화'
+            chatRoom.rooms[`ch_${params.chatRoomId}`]?.status?.status !== '비활성화'
           }
         />
-      </div>
+      </CustomScrollBox>
     </MainContainer>
   );
 }

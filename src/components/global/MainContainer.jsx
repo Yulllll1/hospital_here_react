@@ -22,6 +22,8 @@ const Container = styled.div`
   max-width: 60dvh;
   margin: 0 auto;
   height: 100dvh;
+  border-left: 2px solid #E9E9E9;
+  border-right: 2px solid #E9E9E9;
   padding: 0;
 `;
 

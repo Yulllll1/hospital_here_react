@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Box, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { Btn } from '../../components/global/CustomComponents';
 
 function BoardList({ boards = [] }) {
+  const userRole = localStorage.getItem('userRole');
+
   return (
-    <Box sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: '15px', padding: 2 }}>
+    <Box sx={{ width: '100%' }}>
       {boards.length > 0 ? (
         <List>
           {boards.map((board) => (
@@ -15,6 +18,9 @@ function BoardList({ boards = [] }) {
               to={`/boards/${board.id}`}
               sx={{ borderBottom: '1px solid #ddd' }}
             >
+              <ListItemIcon>
+                <img src='/images/Contract.png' alt="icon" style={{ width: 24, height: 24 }} />
+              </ListItemIcon>
               <ListItemText primary={board.name} />
             </ListItem>
           ))}
@@ -24,15 +30,15 @@ function BoardList({ boards = [] }) {
           게시판이 없습니다.
         </Typography>
       )}
-      <Button
-        variant="contained"
-        color="primary"
-        component={Link}
-        to="/boards/create"
-        sx={{ marginTop: 2, width: '100%' }}
-      >
-        새 게시판 만들기
-      </Button>
+            {userRole === 'ADMIN' && (
+        <Btn
+          component={Link}
+          to="/boards/create"
+          sx={{ marginTop: 2, marginLeft: 'auto' }}
+        >
+          게시판 생성
+        </Btn>
+      )}
     </Box>
   );
 }

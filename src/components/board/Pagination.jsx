@@ -1,27 +1,17 @@
 import React from 'react';
-import { Container, Button, Box } from '@mui/material';
+import { Container, Pagination } from '@mui/material';
 
-function Pagination({ totalPages, currentPage, onPageChange }) {
-  const pages = [];
-
-  for (let i = 0; i < totalPages; i++) {
-    pages.push(
-      <Button
-        key={i}
-        variant={currentPage === i ? 'contained' : 'outlined'}
-        onClick={() => onPageChange(i)}
-        sx={{ mx: 0.5 }}
-      >
-        {i + 1}
-      </Button>
-    );
-  }
-
+function PaginationComponent({ totalPages, currentPage, onPageChange }) {
   return (
     <Container maxWidth="md" sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-      {pages}
+      <Pagination
+        count={totalPages}
+        page={currentPage + 1}
+        onChange={(event, page) => onPageChange(page - 1)}
+        size="small"
+      />
     </Container>
   );
 }
 
-export default Pagination;
+export default PaginationComponent;

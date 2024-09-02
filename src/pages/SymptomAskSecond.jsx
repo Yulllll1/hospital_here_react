@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import MainContainer from '../components/global/MainContainer';
 import { Box, Grid, Container, Typography, Button, Stepper, StepLabel, Step } from '@mui/material';
+import { Btn, TextF } from '../components/global/CustomComponents';
 
 function SymptomAskSecond() {
   const location = useLocation();
@@ -10,9 +11,9 @@ function SymptomAskSecond() {
   const departments = state?.departments || [];
   const navigate = useNavigate();
 
-  // "!!"와 "**"를 제거
+  // "##"와 "**"를 제거
   const cleanMessage = (msg) => {
-    return msg.replace(/!!/g, '').replace(/\*\*/g, '').replace(/\*/g, '');
+    return msg.replace(/##/g, '').replace(/\*\*/g, '').replace(/\*/g, '');
   };
 
   const cleanedMessage = cleanMessage(message);
@@ -29,36 +30,30 @@ function SymptomAskSecond() {
         <Box sx={{ flexGrow: 1 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sx={{ marginTop: '30%' }}>
-              <Stepper activeStep={1} alternativeLabel>
-                {steps.map((label, index) => (
-                  <Step key={index}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                  ))}
-              </Stepper>
             </Grid>
             <Grid item xs={12}>
-              <Typography variant='h1' sx={{ textAlign: 'center' }}>02</Typography>
-              <Typography variant='h4'>진단 결과</Typography>
-              <Typography variant='body1' sx={{ marginTop: 2 }}>
-                {cleanedMessage} 
-              </Typography>
+              <Typography variant='h3' sx={{ color: '#4A885D', fontWeight: 'bold' }}>2</Typography>
+              <Typography variant='h5' sx={{ fontWeight: 'bold'}}>진단 결과</Typography>
+              <Box sx = {{ bgcolor: '#F3F4F0', padding: 2, borderRadius: '30px', marginTop: 3}}>
+                <Typography variant='body1'>
+                  {cleanedMessage} 
+                </Typography>
+              </Box>    
             </Grid>
             <Grid item xs={12} sx={{ marginTop: 2 }}>
-              <Typography variant='h6'>추천 진료 과목:</Typography>
-              <Typography variant='body1'>
-                {departments.join(', ')}
-              </Typography>
+              <Box sx = {{ bgcolor: '#F3F4F0', padding: 2, borderRadius: '30px'}}>
+                <Typography variant='body1' sx = {{fontWeight: 'bold'}}>
+                  {departments.join(', ')}
+                </Typography>
+              </Box>
             </Grid>
-            <Grid item xs={12}>
-              <Button 
-                variant="contained" 
-                color="primary" 
+            <Grid item xs={12} sx = {{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Btn 
                 onClick={handleResultPage} 
                 sx={{ marginTop: 2 }}
               >
                 주변 병원 바로 보기
-              </Button>
+              </Btn>
             </Grid>
           </Grid>
         </Box>

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import ProfileImage from './ProfileImage';
 import styled from 'styled-components';
 import { fromatDate, isToday } from '../../utils/time';
-import { Box, Button, Modal } from '@mui/material';
+import { Box, Modal } from '@mui/material';
 import { useRecoilState } from 'recoil';
 import { userauthState } from '../../utils/atom';
 import EditModal from './modal/EditModal';
 import { useNavigate } from 'react-router';
+import { Btn } from '../global/CustomComponents';
 
 const style = {
   position: 'absolute',
@@ -24,9 +25,10 @@ const style = {
 function Message({ data, repeat, self }) {
   const [auth] = useRecoilState(userauthState);
 
+  const [dptBtnHovered, setDtpBtnHovered] = useState(false);
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
-    if (auth.userId !== Number(data.user.id)) return;
+    if (auth.userId !== Number(data.user.id) || dptBtnHovered) return;
     setOpen(true);
   };
   const handleClose = () => setOpen(false);
@@ -68,9 +70,14 @@ function Message({ data, repeat, self }) {
         <Box sx={style}>
           <h2 id='parent-modal-title'>메시지 옵션</h2>
           <p style={{ color: '#22a1d3', fontWeight: 'bold', fontStyle: 'italic' }}>
-            {data.content}
+            {data.content.replace(/\\n/g, ' ').replace('dpt: ', '제공 진료과: ')}
           </p>
-          <EditModal msgId={data.id} msg={data.content} setOpens={setOpen} />
+          <EditModal
+            msgId={data.id}
+            msg={data.content}
+            setOpens={setOpen}
+            isDpt={data.content.startsWith('dpt: ') ? true : undefined}
+          />
         </Box>
       </Modal>
       <Container self={self}>
@@ -93,13 +100,14 @@ function Message({ data, repeat, self }) {
             {data.content.startsWith('dpt: ') && data.user.role === 'DOCTOR' ? (
               <Suggestion>
                 <p>진료과 추천 정보가 제공되었습니다</p>
-                <Button
-                  variant='contained'
+                <Btn
                   onClick={requestHospital}
-                  sx={{ width: '80%', backgroundColor: '#272424' }}
+                  sx={{ width: '80%' }}
+                  onMouseEnter={() => setDtpBtnHovered(true)}
+                  onMouseLeave={() => setDtpBtnHovered(false)}
                 >
                   {data.content.split(' ')[1]}
-                </Button>
+                </Btn>
               </Suggestion>
             ) : (
               data.content.split('\\n').map(e => (
@@ -137,7 +145,7 @@ const BottomContainer = styled.div`
   justify-content: ${({ self }) => (self ? 'flex-end' : 'flex-start')};
   align-items: flex-end;
   height: 100%;
-  margin-right: ${({ self }) => (self ? '0px' : '3rem')};
+  margin-right: ${({ self }) => (self ? '5px' : '3rem')};
   margin-left: ${({ self }) => (self ? '0px' : '3rem')};
   @media (min-width: 481px) {
     font-size: 2rem;
@@ -157,7 +165,7 @@ const Author = styled.p`
 `;
 
 const Content = styled.div`
-  background-color: ${({ self }) => (self ? '#3399ff' : '#99ddff')};
+  background-color: ${({ self }) => (self ? 'var(--main-soft)' : 'var(--paper-soft)')};
   padding: 10px;
   border-radius: 10px;
   margin-right: ${({ self }) => (self ? '10px' : '0px')};
@@ -174,7 +182,10 @@ const Content = styled.div`
 const Suggestion = styled.p`
   display: flex;
   flex-direction: column;
-  @media (min-width: 481px) {
+  align-items: center;
+  font-size: 1rem;
+  @media (max-width: 500px) {
+    font-size: 0.9rem;
   }
 `;
 

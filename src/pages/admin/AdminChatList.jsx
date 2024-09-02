@@ -3,9 +3,10 @@ import MainContainer from "../../components/global/MainContainer";
 import { Paper, Typography, Box, Tab, Tabs } from "@mui/material";
 import { axiosInstance } from "../../utils/axios";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { Loading } from "../../components/Loading";
 
 const AdminChatList = () => {
-
+  const [loading, setLoading] = useState(false);
   const [chatList, setChatList] = useState(null);
   const [tabValue, setTabValue] = useState('1');
 
@@ -15,12 +16,14 @@ const AdminChatList = () => {
 
   useEffect(()=>{
     const GetChatList = async () =>{
+      setLoading(true);
       try{
         const response = await axiosInstance.get('/admin/chatrooms');
         setChatList(response.data);
       } catch (exception){
         console.log(exception);
       }
+      setLoading(false);
     };
     GetChatList();
   }, []);
@@ -61,13 +64,13 @@ const AdminChatList = () => {
           </TabList>
         <Box sx={{border: '1px solid grey' }}></Box>
         <TabPanel value='0' sx={{padding: '0'}}>
-          {chatList ? <ChatRoomListAll /> : <Typography variant='body1'>Loading..</Typography>}
+          {chatList ? <ChatRoomListAll /> : <Loading open={loading}/>}
         </TabPanel>
         <TabPanel value='1' sx={{padding: '0'}}>
-        {chatList ? <ChatRoomFilter type='의사 상담'/> : <Typography variant='body1'>Loading..</Typography>}
+        {chatList ? <ChatRoomFilter type='의사 상담'/> : <Loading open={loading}/>}
         </TabPanel>    
         <TabPanel value='2' sx={{padding: '0'}}>
-        {chatList ? <ChatRoomFilter type='서비스센터 상담'/> : <Typography variant='body1'>Loading..</Typography>}
+        {chatList ? <ChatRoomFilter type='서비스센터 상담'/> : <Loading open={loading}/>}
         </TabPanel>      
       </TabContext>
       </Paper>

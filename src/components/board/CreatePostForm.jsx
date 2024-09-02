@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { TextField, Button, Container, Box, Typography, CircularProgress, IconButton } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Grid, CircularProgress, IconButton } from '@mui/material';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../firebase';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Btn, Btntwo, TextF } from '../../components/global/CustomComponents';
 
 function CreatePostForm({ onSubmit }) {
   const [title, setTitle] = useState('');
@@ -31,11 +32,17 @@ function CreatePostForm({ onSubmit }) {
 
   const updatePreviewUrls = (files) => {
     const urls = files.map(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrls(prev => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve(reader.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(urls).then(results => {
+      setPreviewUrls(prev => [...prev, ...results]);
     });
   };
 
@@ -69,89 +76,98 @@ function CreatePostForm({ onSubmit }) {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          mt: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          backgroundColor: '#fff',
-          borderRadius: 2,
-          boxShadow: 3,
-          p: 3,
-        }}
-      >
-        <Typography variant="h3" gutterBottom>Create Post</Typography>
-        <TextField
-          label="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          variant="outlined"
-          fullWidth
-          multiline
-          rows={4}
-          label="Content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          sx={{ mb: 2 }}
-        />
+    <Container sx={{ display: 'flex', alignItems: 'center', height: '80dvh' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Box
-          sx={{
-            border: '2px dashed grey',
-            borderRadius: 1,
-            p: 2,
-            textAlign: 'center',
-            mb: 2,
-            width: '100%',
-            cursor: 'pointer',
-            position: 'relative'
-          }}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ width: '100%', maxWidth: 600 }}
         >
-          <Typography>Drag & Drop your images here or click to select</Typography>
-          <Button
-            variant="contained"
-            component="label"
-            sx={{ mt: 2 }}
-          >
-            Upload Images
-            <input
-              type="file"
-              hidden
-              multiple
-              onChange={handleImageChange}
-            />
-          </Button>
-        </Box>
-        {previewUrls.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            {previewUrls.map((url, index) => (
-              <Box key={index} sx={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
-                <img src={url} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', borderRadius: 2 }} />
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => handleRemoveImage(index)}
-                  sx={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
+                게시글 작성
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <TextF
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <TextF
+                fullWidth
+                multiline
+                rows={4}
+                label="Content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1,  // borderRadius를 제거
+                  },
+                  my: 2
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  border: '2px dashed grey',
+                  borderRadius: 1,
+                  p: 2,
+                  textAlign: 'center',
+                  mb: 2,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+              >
+                <Typography>이미지를 드래그하거나 업로드 하세요.</Typography>
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  onChange={handleImageChange}
+                />
+                <Btn
+                  sx={{ mt: 2 }}
+                  onClick={() => document.querySelector('input[type="file"]').click()}
                 >
-                  <DeleteIcon />
-                </IconButton>
+                  이미지 업로드
+                </Btn>
               </Box>
-            ))}
-          </Box>
-        )}
-        <Button variant="contained" color="primary" type="submit" fullWidth sx={{ mt: 2 }}>
-          Create Post
-        </Button>
-        {loading && <CircularProgress sx={{ mt: 2 }} />}
+              {previewUrls.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  {previewUrls.map((url, index) => (
+                    <Box key={index} sx={{ position: 'relative', display: 'inline-block', margin: '10px' }}>
+                      <img src={url} alt="Image Preview" style={{ maxWidth: '100%', height: 'auto', borderRadius: 2 }} />
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => handleRemoveImage(index)}
+                        sx={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Grid>
+            <Grid item xs={12}>
+              <Btntwo type="submit" sx={{ mt: 2, width: '100%' }}>
+                Create Post
+              </Btntwo>
+              {loading && <CircularProgress sx={{ mt: 2 }} />}
+            </Grid>
+          </Grid>
+        </Box>
       </Box>
     </Container>
   );

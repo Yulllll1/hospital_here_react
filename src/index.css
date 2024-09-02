@@ -11,3 +11,7 @@ body {
   margin: 0;
   font-family: 'Pretendard-Regular', sans-serif;
 }
+
+/* slick-carousel 스타일 */
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";

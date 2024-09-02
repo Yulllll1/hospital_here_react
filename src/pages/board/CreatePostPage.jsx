@@ -59,7 +59,7 @@ function CreatePostPage() {
           <>
             {error && <Alert severity="error">{error}</Alert>}
             <CreatePostForm onSubmit={handleSubmit} />
-            <Box sx={{ mt: 4 }}>
+            {/* <Box sx={{ mt: 4 }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -67,7 +67,7 @@ function CreatePostPage() {
               >
                 Back to prev
               </Button>
-            </Box>
+            </Box> */}
           </>
         )}
       </Box>
